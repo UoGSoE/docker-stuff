@@ -28,4 +28,6 @@ docker stack deploy -c stack.yml bingo
 
 ### Assumptions
 
-You are using [Traefik](https://traefik.io/) as your proxy and there is a swarm overlay network for it called 'proxy'.  You have a mysql database server (or mysql-router) available in an overlay network called 'mysql'.
+You are using [Traefik](https://traefik.io/) as your proxy and there is a swarm overlay network for it called 'proxy'.  
+
+You have a mysql database server (or mysql-router) available in an overlay network called 'mysql'.
