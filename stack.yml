@@ -1,0 +1,102 @@
+version: "3.7"
+
+x-logging:
+  &default-logging
+  options:
+    max-size: '12m'
+    max-file: '5'
+  driver: json-file
+x-healthcheck:
+  &default-healthcheck
+  test: ["CMD", "/usr/local/bin/app-healthcheck"]
+  interval: 5m
+  timeout: 5s
+  start_period: 30s
+
+services:
+  app:
+    image: ${IMAGE_NAME}
+    networks:
+      - proxy
+      - mysql
+    expose:
+      - "80"
+    environment:
+      CONTAINER_ROLE: app
+    secrets:
+      - source: dotenv
+        target: .env
+    deploy:
+      replicas: 3
+      labels:
+        - "traefik.backend=${TRAEFIK_BACKEND}"
+        - "traefik.docker.network=proxy"
+        - "traefik.frontend.rule=Host:${TRAEFIK_HOSTNAME}"
+        - "traefik.enable=true"
+        - "traefik.port=80"
+        - "traefik.default.protocol=http"
+    healthcheck: *default-healthcheck
+    logging: *default-logging
+
+  scheduler:
+    image: ${IMAGE_NAME}
+    deploy:
+      labels:
+        - "traefik.enable=false"
+    networks:
+      - mysql
+    environment:
+      CONTAINER_ROLE: scheduler
+    secrets:
+      - source: dotenv
+        target: .env
+    healthcheck: *default-healthcheck
+    logging: *default-logging
+
+  queue:
+    image: ${IMAGE_NAME}
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=false"
+    networks:
+      - mysql
+    environment:
+      CONTAINER_ROLE: queue
+    secrets:
+      - source: dotenv
+        target: .env
+    healthcheck: *default-healthcheck
+    logging: *default-logging
+
+  migrations:
+    image: ${IMAGE_NAME}
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=false"
+    networks:
+      - mysql
+    environment:
+      CONTAINER_ROLE: migrations
+    secrets:
+      - source: dotenv
+        target: .env
+
+  redis:
+    image: redis:4
+    deploy:
+      labels:
+        - "traefik.enable=false"
+    logging: *default-logging
+
+secrets:
+  dotenv:
+    external: true
+    name: ${DOTENV_NAME}
+
+networks:
+  proxy:
+    external: true
+  mysql:
+    external: true
