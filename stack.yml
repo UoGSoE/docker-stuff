@@ -12,6 +12,11 @@ x-healthcheck:
   interval: 5m
   timeout: 5s
   start_period: 30s
+x-deploy:
+  &default-deploy
+  replicas: 1
+  labels:
+    - "traefik.enable=false"
 
 services:
   app:
@@ -40,9 +45,7 @@ services:
 
   scheduler:
     image: ${IMAGE_NAME}
-    deploy:
-      labels:
-        - "traefik.enable=false"
+    deploy: *default-deploy
     networks:
       - mysql
     environment:
@@ -55,10 +58,7 @@ services:
 
   queue:
     image: ${IMAGE_NAME}
-    deploy:
-      replicas: 1
-      labels:
-        - "traefik.enable=false"
+    deploy: *default-deploy
     networks:
       - mysql
     environment:
@@ -71,10 +71,7 @@ services:
 
   migrations:
     image: ${IMAGE_NAME}
-    deploy:
-      replicas: 1
-      labels:
-        - "traefik.enable=false"
+    deploy: *default-deploy
     networks:
       - mysql
     environment:
@@ -85,9 +82,7 @@ services:
 
   redis:
     image: redis:4
-    deploy:
-      labels:
-        - "traefik.enable=false"
+    deploy: *default-deploy
     logging: *default-logging
 
 secrets:
