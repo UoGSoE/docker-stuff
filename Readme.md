@@ -28,6 +28,8 @@ docker stack deploy -c stack.yml bingo
 
 ### Assumptions
 
-You are using [Traefik](https://traefik.io/) as your proxy and there is a swarm overlay network for it called 'proxy'.  
+You are using [Traefik](https://traefik.io/) as your proxy and there is a swarm overlay network for it called 'proxy'.
 
 You have a mysql database server (or mysql-router) available in an overlay network called 'mysql'.
+
+You have an http get endpoint in your main app available at `/login` - this is used as the healthcheck for the container.  If you want to use something else then change the curl command in `docker/app-healthcheck`.
