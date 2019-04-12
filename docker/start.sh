@@ -37,7 +37,11 @@ elif [ "$role" = "scheduler" ]; then
 
 elif [ "$role" = "migrations" ]; then
 
-    php /var/www/html/artisan migrate --force
+    php /var/www/html/artisan migrate --
+    while [ true ]
+    do
+        sleep 86400
+    done
 
 else
     echo "Could not match the container role \"$role\""
