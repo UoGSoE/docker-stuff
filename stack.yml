@@ -24,6 +24,7 @@ services:
     networks:
       - proxy
       - mysql
+      - default
     expose:
       - "80"
     environment:
@@ -48,6 +49,7 @@ services:
     deploy: *default-deploy
     networks:
       - mysql
+      - default
     environment:
       CONTAINER_ROLE: scheduler
     secrets:
@@ -61,6 +63,7 @@ services:
     deploy: *default-deploy
     networks:
       - mysql
+      - default
     environment:
       CONTAINER_ROLE: queue
     secrets:
@@ -74,6 +77,7 @@ services:
     deploy: *default-deploy
     networks:
       - mysql
+      - default
     environment:
       CONTAINER_ROLE: migrations
     secrets:
@@ -84,6 +88,8 @@ services:
     image: redis:4
     deploy: *default-deploy
     logging: *default-logging
+    networks:
+      - default
 
 secrets:
   dotenv:
@@ -91,6 +97,7 @@ secrets:
     name: ${DOTENV_NAME}
 
 networks:
+  default:
   proxy:
     external: true
   mysql:
