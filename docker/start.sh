@@ -37,7 +37,7 @@ elif [ "$role" = "scheduler" ]; then
 
 elif [ "$role" = "migrations" ]; then
 
-    php /var/www/html/artisan migrate --
+    php /var/www/html/artisan migrate --force
     while [ true ]
     do
         sleep 86400
