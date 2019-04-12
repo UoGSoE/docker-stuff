@@ -81,3 +81,64 @@ LDAP_PASSWORD=secret
 ## Gitlab-ci
 
 There's a `gitlab/` folder with the scripts/files we use to run gitlab's CI process.  Feel free to steal them.  They need to to in the root directory of your repo for gitlab to pick them up.
+
+## Our current setup
+
+We have a small(ish) docker swarm.  Each node runs a local container registry on 127.0.0.1:5000.  We have an on-premise Gitlab install which acts as our source controller, CI runner and container registry.
+
+All of the container registries are backed by 'S3'-alike storage provided using a local [Minio](https://www.minio.io/) server.  That means when we push an image to Gitlab, it ends
+up being available on all of the swarm nodes too as they're all pointing at the same bucket.  That just means we avoid some tls/auth stuff - it's all on premise behind the corporate firewall - don't hate on me ;-)
+
+The config for to do that with the registry is just :
+
+```
+version: 0.1
+log:
+  level: debug
+  formatter: text
+  fields:
+    service: registry
+    environment: staging
+loglevel: debug
+http:
+ secret: some-long-string
+storage:
+  s3:
+    accesskey: some-other-string
+    secretkey: an-even-longer-string
+    region: us-east-1
+    regionendpoint: http://our.minio.server:9000
+    # Make sure you've created the following bucket.
+    bucket: "docker-registry"
+    encrypt: false
+    secure: true
+    v4auth: true
+  delete:
+    enabled: true
+  maintenance:
+    uploadpurging:
+      enabled: true
+      age: 168h
+      interval: 24h
+      dryrun: false
+    readonly:
+      enabled: false
+http:
+  addr: :5000
+```
+
+And the config for gitlab is just :
+
+```
+... your other config
+registry['storage'] = {
+  's3' => {
+    'accesskey' => 'some-other-string',
+    'secretkey' => 'an-even-longer-string',
+    'bucket' => 'docker-registry',
+    'regionendpoint' => 'http://our.minio.server:9000',
+    'region' => 'us-east-1',
+    'path_style' => true
+  }
+}
+```
