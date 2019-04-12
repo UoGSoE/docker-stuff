@@ -6,7 +6,7 @@ Laravel/PHP apps.
 ## If you're interested
 
 Each app gets a copy of the `docker/` directory and the `stack.yml` file.  The stack file
-is pretty generic and used for all our apps.  To use it you need to set a few environment variables and create a secret in swarm.  For instance, for an app called 'bingo' you might do :
+is pretty generic and used as the base for all our apps.  To use it you need to set a few environment variables and create a secret in swarm.  For instance, for an app called 'bingo' you might do :
 
 ```
 # build the image and push to a local registry
@@ -34,7 +34,7 @@ You have a mysql database server (or mysql-router) available in an overlay netwo
 
 You have an http get endpoint in your main app available at `/login` - this is used as the healthcheck for the container.  If you want to use something else then change the curl command in `docker/app-healthcheck`.
 
-## Example dotenv that matches the stack
+### Example dotenv that matches the stack
 
 ```
 APP_NAME="Bingo"
@@ -77,3 +77,7 @@ LDAP_USERNAME='whatever'
 LDAP_PASSWORD=secret
 
 ```
+
+## Gitlab-ci
+
+There's a `gitlab/` folder with the scripts/files we use to run gitlab's CI process.  Feel free to steal them.  They need to to in the root directory of your repo for gitlab to pick them up.

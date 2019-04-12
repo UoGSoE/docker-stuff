@@ -1,0 +1,51 @@
+stages:
+  - test
+  - build
+
+# This folder is cached between builds
+# http://docs.gitlab.com/ce/ci/yaml/README.html#cache
+cache:
+  paths:
+  # - vendor/
+  # - node_modules/
+
+test:
+  image: uogsoe/soe-php-apache:7.2-ci
+
+  services:
+  - mysql:5.7
+
+  variables:
+    MYSQL_DATABASE: homestead
+    MYSQL_ROOT_PASSWORD: secret
+    MYSQL_USER: homestead
+    MYSQL_PASSWORD: secret
+
+  before_script:
+  - cp .env.gitlab .env
+  - composer install
+  - php artisan key:generate
+  - php artisan config:clear
+  - php artisan migrate:fresh
+
+  # If you need Node.js
+  #- curl -sL https://deb.nodesource.com/setup_8.x | bash -
+  #- apt-get install -y nodejs
+  #- npm install
+  #- npm run dev
+
+  script:
+  - php vendor/bin/phpunit --coverage-text --colors=never
+
+build:
+  stage: build
+  image: docker:stable
+  only:
+  - master
+  script:
+  - cp docker/prod.Dockerfile ./Dockerfile
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  - docker build -t $CI_REGISTRY/$CI_PROJECT_PATH .
+  - docker build -t $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_SHA .
+  - docker push $CI_REGISTRY/$CI_PROJECT_PATH
+  - docker push $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_SHA
