@@ -42,7 +42,7 @@ APP_ENV=production
 APP_KEY=base64:jxTSe1f8UnLnQWJyG0xMOQKnExy+MuXJLo6Yju/8iRM=
 APP_DEBUG=false
 APP_LOG_LEVEL=debug
-APP_URL=http://bingo.whatever.com/
+APP_URL=http://bingo.yourdomain.com/
 
 DB_CONNECTION=mysql
 DB_HOST=mysql
@@ -63,15 +63,15 @@ REDIS_PASSWORD=null
 REDIS_PORT=6379
 
 MAIL_DRIVER=smtp
-MAIL_HOST=smtp.whatever.com
+MAIL_HOST=smtp.yourdomain.com
 MAIL_PORT=25
 MAIL_USERNAME=null
 MAIL_PASSWORD=null
 MAIL_ENCRYPTION=null
-MAIL_FROM_ADDRESS=bingo-app@whatever.com
+MAIL_FROM_ADDRESS=bingo-app@yourdomain.com
 MAIL_FROM_NAME="Bingo App"
 
-LDAP_SERVER=ldap.whatever.com
+LDAP_SERVER=ldap.yourdomain.com
 LDAP_OU=Users
 LDAP_USERNAME='whatever'
 LDAP_PASSWORD=secret
