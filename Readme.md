@@ -89,7 +89,7 @@ We have a small(ish) docker swarm.  Each node runs a local container registry on
 All of the container registries are backed by 'S3'-alike storage provided using a local [Minio](https://www.minio.io/) server.  That means when we push an image to Gitlab, it ends
 up being available on all of the swarm nodes too as they're all pointing at the same bucket.  That just means we avoid some tls/auth stuff - it's all on premise behind the corporate firewall - don't hate on me ;-)
 
-The config for to do that with the registry is just :
+The config to do that with the registry is just :
 
 ```
 version: 0.1
