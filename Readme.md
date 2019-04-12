@@ -33,3 +33,47 @@ You are using [Traefik](https://traefik.io/) as your proxy and there is a swarm 
 You have a mysql database server (or mysql-router) available in an overlay network called 'mysql' and it's docker container name is 'mysql'.
 
 You have an http get endpoint in your main app available at `/login` - this is used as the healthcheck for the container.  If you want to use something else then change the curl command in `docker/app-healthcheck`.
+
+## Example dotenv that matches the stack
+
+```
+APP_NAME="Bingo"
+APP_ENV=production
+APP_KEY=base64:jxTSe1f8UnLnQWJyG0xMOQKnExy+MuXJLo6Yju/8iRM=
+APP_DEBUG=false
+APP_LOG_LEVEL=debug
+APP_URL=http://bingo.whatever.com/
+
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=your_db_name
+DB_USERNAME=your_db_user
+DB_PASSWORD=your_db_password
+
+BROADCAST_DRIVER=redis
+CACHE_DRIVER=redis
+SESSION_DRIVER=redis
+SESSION_LIFETIME=120
+QUEUE_CONNECTION=redis
+QUEUE_NAME=bingo-queue
+
+REDIS_HOST=redis
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+MAIL_DRIVER=smtp
+MAIL_HOST=smtp.whatever.com
+MAIL_PORT=25
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS=bingo-app@whatever.com
+MAIL_FROM_NAME="Bingo App"
+
+LDAP_SERVER=ldap.whatever.com
+LDAP_OU=Users
+LDAP_USERNAME='whatever'
+LDAP_PASSWORD=secret
+
+```
