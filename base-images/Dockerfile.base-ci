@@ -1,0 +1,15 @@
+ARG PHP_VERSION
+
+FROM uogsoe/soe-php-apache:${PHP_VERSION}
+
+#RUN pecl install ${XDEBUG_VERSION}
+#RUN docker-php-ext-enable xdebug
+RUN pecl install pcov
+RUN docker-php-ext-enable pcov
+
+RUN curl -sS https://getcomposer.org/installer | php
+RUN mv composer.phar /usr/local/bin/composer
+RUN chmod +x /usr/local/bin/composer
+RUN composer global require hirak/prestissimo
+
+EXPOSE 80
