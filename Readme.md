@@ -34,6 +34,10 @@ You have a mysql database server (or mysql-router) available in an overlay netwo
 
 You have an http get endpoint in your main app available at `/login` - this is used as the healthcheck for the container.  If you want to use something else then change the curl command in `docker/app-healthcheck`.
 
+### Base images
+
+To build the base php images themselves we use the `build.sh` script and files inside the `base-images/` directory.
+
 ### Example dotenv that matches the stack
 
 ```
