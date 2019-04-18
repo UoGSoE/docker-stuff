@@ -1,3 +1,6 @@
+variables:
+  PHP_VERSION: "7.2"
+
 stages:
   - test
   - build
@@ -10,7 +13,7 @@ cache:
   # - node_modules/
 
 test:
-  image: uogsoe/soe-php-apache:7.2-ci
+  image: uogsoe/soe-php-apache:${PHP_VERSION}-ci
 
   services:
   - mysql:5.7
@@ -37,7 +40,25 @@ test:
   script:
   - php vendor/bin/phpunit --coverage-text --colors=never
 
-build:
+build-qa-tagged:
+  stage: build
+  image: docker:stable
+  script:
+  - cp docker/qa.Dockerfile ./Dockerfile
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} -t $CI_REGISTRY/$CI_PROJECT_PATH:qa-$CI_COMMIT_SHA .
+  - docker push $CI_REGISTRY/$CI_PROJECT_PATH:qa-$CI_COMMIT_SHA
+
+build-prod-tagged:
+  stage: build
+  image: docker:stable
+  script:
+  - cp docker/prod.Dockerfile ./Dockerfile
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} -t $CI_REGISTRY/$CI_PROJECT_PATH:prod-$CI_COMMIT_SHA .
+  - docker push $CI_REGISTRY/$CI_PROJECT_PATH:prod-$CI_COMMIT_SHA
+
+build-latest:
   stage: build
   image: docker:stable
   only:
@@ -45,7 +66,5 @@ build:
   script:
   - cp docker/prod.Dockerfile ./Dockerfile
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - docker build -t $CI_REGISTRY/$CI_PROJECT_PATH .
-  - docker build -t $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_SHA .
-  - docker push $CI_REGISTRY/$CI_PROJECT_PATH
-  - docker push $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_SHA
+  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} -t $CI_REGISTRY/$CI_PROJECT_PATH:latest .
+  - docker push $CI_REGISTRY/$CI_PROJECT_PATH:latest
