@@ -2,7 +2,9 @@
 ARG PHP_VERSION=7.2
 
 # Set up php dependancies
-FROM composer:1.8 as vendor
+FROM uogsoe/soe-php-apache:${PHP_VERSION}-ci as vendor
+
+USER composer:composer
 
 ENV APP_ENV=production
 ENV APP_DEBUG=false
@@ -10,26 +12,27 @@ ENV APP_DEBUG=false
 RUN mkdir -p database/seeds
 RUN mkdir -p database/factories
 
-COPY composer.json composer.json
-COPY composer.lock composer.lock
+COPY --chown composer:composer composer.json composer.json
+COPY --chown composer:composer composer.lock composer.lock
 
 RUN composer install \
     --no-interaction \
     --no-plugins \
     --no-scripts \
     --no-dev \
-    --ignore-platform-reqs \
     --prefer-dist
 
 # Build JS/css assets
-FROM node:latest as frontend
+FROM node:10 as frontend
+
+USER node:node
 
 RUN node --version
 RUN mkdir -p /app/public
-
-COPY package.json webpack.mix.js package-lock.json /app/
 RUN mkdir /app/resources
-COPY resources/ /app/resources/
+
+COPY --chown node:node package.json webpack.mix.js package-lock.json /app/
+COPY --chown node:node resources/ /app/resources/
 
 WORKDIR /app
 
