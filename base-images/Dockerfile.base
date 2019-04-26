@@ -1,14 +1,28 @@
 ARG PHP_VERSION
 
-FROM php:${PHP_VERSION}-apache
+FROM php:${PHP_VERSION}-apache as prod
 
 RUN apt-get update && \
-    apt-get install -y libfreetype6-dev libjpeg62-turbo-dev libpng-dev libgmp-dev libldap2-dev netcat sqlite3 libsqlite3-dev libzip-dev && \
+    apt-get install -y libfreetype6-dev libjpeg62-turbo-dev libpng-dev libgmp-dev libldap2-dev netcat sqlite3 libsqlite3-dev libzip-dev unzip && \
     docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
     docker-php-ext-install gd pdo pdo_mysql pdo_sqlite zip gmp bcmath pcntl ldap sysvmsg exif && \
-    a2enmod rewrite
+    a2enmod rewrite && \
+    rm -rf /var/lib/apt/lists/* && \
+    pecl install pcov && \
+    echo "pcov.enabled = 0" > /usr/local/etc/php/conf.d/pcov.ini && \
+    curl -o /tmp/composer-setup.php https://getcomposer.org/installer \
+    && curl -o /tmp/composer-setup.sig https://composer.github.io/installer.sig \
+    # Make sure we're installing what we think we're installing!
+    && php -r "if (hash('SHA384', file_get_contents('/tmp/composer-setup.php')) !== trim(file_get_contents('/tmp/composer-setup.sig'))) { unlink('/tmp/composer-setup.php'); echo 'Invalid installer' . PHP_EOL; exit(1); }" \
+    && php /tmp/composer-setup.php --no-ansi --install-dir=/usr/local/bin --filename=composer --snapshot \
+    && rm -f /tmp/composer-setup.*
 
 COPY vhost.conf /etc/apache2/sites-available/000-default.conf
 COPY uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 
 EXPOSE 80
+
+FROM prod as ci
+RUN docker-php-ext-enable pcov && \
+    echo "pcov.enabled = 1" > /usr/local/etc/php/conf.d/pcov.ini
+

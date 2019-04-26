@@ -13,7 +13,7 @@ cache:
   # - node_modules/
 
 test:
-  image: uogsoe/soe-php-apache:${PHP_VERSION}-ci
+  image: uogsoe/soe-php-apache:7.2-ci
 
   services:
   - mysql:5.7
@@ -32,7 +32,7 @@ test:
   - php artisan migrate:fresh
 
   # If you need Node.js
-  #- curl -sL https://deb.nodesource.com/setup_8.x | bash -
+  #- curl -sL https://deb.nodesource.com/setup_10.x | bash -
   #- apt-get install -y nodejs
   #- npm install
   #- npm run dev
@@ -44,9 +44,9 @@ build-qa-tagged:
   stage: build
   image: docker:stable
   script:
-  - cp docker/qa.Dockerfile ./Dockerfile
+  - cp docker/prod.Dockerfile ./Dockerfile
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} -t $CI_REGISTRY/$CI_PROJECT_PATH:qa-$CI_COMMIT_SHA .
+  - DOCKER_BUILDKIT=1 docker build --target=ci --build-arg PHP_VERSION=${PHP_VERSION} -t $CI_REGISTRY/$CI_PROJECT_PATH:ci-$CI_COMMIT_SHA .
   - docker push $CI_REGISTRY/$CI_PROJECT_PATH:qa-$CI_COMMIT_SHA
 
 build-prod-tagged:
@@ -55,7 +55,7 @@ build-prod-tagged:
   script:
   - cp docker/prod.Dockerfile ./Dockerfile
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} -t $CI_REGISTRY/$CI_PROJECT_PATH:prod-$CI_COMMIT_SHA .
+  - DOCKER_BUILDKIT=1 docker build --target=prod --build-arg PHP_VERSION=${PHP_VERSION} -t $CI_REGISTRY/$CI_PROJECT_PATH:prod-$CI_COMMIT_SHA .
   - docker push $CI_REGISTRY/$CI_PROJECT_PATH:prod-$CI_COMMIT_SHA
 
 build-latest:
@@ -66,5 +66,5 @@ build-latest:
   script:
   - cp docker/prod.Dockerfile ./Dockerfile
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} -t $CI_REGISTRY/$CI_PROJECT_PATH:latest .
+  - DOCKER_BUILDKIT=1 docker build --target=prod --build-arg PHP_VERSION=${PHP_VERSION} -t $CI_REGISTRY/$CI_PROJECT_PATH:latest .
   - docker push $CI_REGISTRY/$CI_PROJECT_PATH:latest
