@@ -38,8 +38,9 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-RUN npm ci
-RUN npm run production
+RUN npm ci && \
+    npm run production && \
+    npm cache clean --force
 
 # And build the app
 FROM uogsoe/soe-php-apache:${PHP_VERSION}
