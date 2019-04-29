@@ -36,8 +36,10 @@ COPY --chown node:node resources/ /app/resources/
 
 WORKDIR /app
 
-RUN yarn install
-RUN yarn production
+ENV NODE_ENV=production
+
+RUN npm ci
+RUN npm run production
 
 # And build the app
 FROM uogsoe/soe-php-apache:${PHP_VERSION}
