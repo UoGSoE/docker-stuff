@@ -23,6 +23,7 @@ COPY uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 EXPOSE 80
 
 FROM prod as ci
+ENV DRIVER pcov
 RUN docker-php-ext-enable pcov && \
     echo "pcov.enabled = 1" > /usr/local/etc/php/conf.d/pcov.ini
 
