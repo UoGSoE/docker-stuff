@@ -85,7 +85,7 @@ services:
         target: .env
 
   redis:
-    image: redis:4
+    image: redis:5.0.4
     deploy: *default-deploy
     logging: *default-logging
     networks:
