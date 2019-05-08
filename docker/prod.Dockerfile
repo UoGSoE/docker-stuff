@@ -38,7 +38,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-RUN npm ci && \
+RUN npm install && \
     npm run production && \
     npm cache clean --force
 
