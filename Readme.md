@@ -84,7 +84,7 @@ LDAP_PASSWORD=secret
 
 ## Gitlab-ci
 
-There's a `gitlab/` folder with the scripts/files we use to run gitlab's CI process.  Feel free to steal them.  They need to to in the root directory of your repo for gitlab to pick them up.
+There's `.env.gitlab` and `.gitlab-ci.yml` files with the settings we use to run gitlab's CI process.  Feel free to steal them.
 
 ## Our current setup
 
