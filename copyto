@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Simple wrapper around 'rsync' to copy the files to a project
+# but ignore the .git directory so we don't clobber anything
+
+set -e
+
+if [ "$#" -ne 1 ]; then
+    echo "You need to supply a path..."
+    echo
+    echo "copyto ~/code/some-project-name/"
+    exit 1
+fi
+
+if ! type -P "rsync" >> /dev/null;
+then
+    echo "command 'rsync' not found"
+    exit 1
+fi
+
+rsync -av --exclude=".git" ./ "$1"
+
