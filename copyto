@@ -18,5 +18,5 @@ then
     exit 1
 fi
 
-rsync -av --exclude=".git" ./ "$1"
+rsync -av --exclude=".git" --exclude=".DS_Store" --exclude="LICENSE" --exclude="base_images" --exclude="Readme*" --exclude="copyto" ./ "$1"
 

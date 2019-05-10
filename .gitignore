@@ -1,2 +1,10 @@
 .DS_Store
+vendor/
+node_modules/
+tests/Browser/screenshots
+tests/Browser/console
+-public/js/
+-public/css/
+-yarn-error.log
+npm-debug
 
