@@ -35,7 +35,7 @@ You have a mysql database server (or mysql-router) available in an overlay netwo
 
 You have an http get endpoint in your main app available at `/login` - this is used as the healthcheck for the container.  If you want to use something else then change the curl command in `docker/app-healthcheck`.
 
-You have an environment variable called PHP_VERSION that targets the major.minor version you are wanting to use, eg `export PHP_VERSION=7.3`.
+You have an environment variable called PHP_VERSION that targets the major.minor version you are wanting to use, eg `export PHP_VERSION=7.3`.  The default PHP_VERSION is at the top of the dockerfile if you don't want to use an env variable.
 
 ### Base images
 
