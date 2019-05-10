@@ -11,7 +11,7 @@ is pretty generic and used as the base for all our apps.  To use it you need to 
 ```
 # build the image and push to a local registry
 export PHP_VERSION=7.3
-docker build --build-arg=PHP_VERSION=${PHP_VERSION} -t 127.0.0.1:5000/bingo -f ./docker/prod.Dockerfile .
+docker build --build-arg=PHP_VERSION=${PHP_VERSION} -t 127.0.0.1:5000/bingo .
 docker push 127.0.0.1:5000/bingo
 
 # create a docker secret from a file called docker.env - this should be your normal laravel app '.env' stuff
@@ -88,6 +88,12 @@ LDAP_PASSWORD=secret
 ## Gitlab-ci
 
 There's `.env.gitlab` and `.gitlab-ci.yml` files with the settings we use to run gitlab's CI process.  Feel free to steal them.  Our gitlab assumed you will have an environment variable set up in gitlab's CI settings for the php version you are targetting, eg `PHP_VERSION` `7.3`.
+
+The gitlab CI setup will build three images :
+
+* `your/repo:qa-${git_sha}` - all the code + dev php packages
+* `your/repo:prod-${git_sha}` - all the code + only production php packages
+* `your/repo:latest` - same as the prod- image, only builds for pushes to master branch
 
 ## Our current setup
 
