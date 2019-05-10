@@ -35,22 +35,21 @@ test:
   #- npm run dev
 
   script:
-  - php vendor/bin/phpunit --coverage-text --colors=never
+  # - php vendor/bin/phpunit --coverage-text --colors=never
+  - php vendor/bin/phpunit --colors=never
 
 build-qa-tagged:
   stage: build
   image: docker:stable
   script:
-  - cp docker/prod.Dockerfile ./Dockerfile
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} --target=ci --build-arg PHP_VERSION=${PHP_VERSION} -t $CI_REGISTRY/$CI_PROJECT_PATH:ci-$CI_COMMIT_SHA .
+  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} --target=ci --build-arg PHP_VERSION=${PHP_VERSION} -t $CI_REGISTRY/$CI_PROJECT_PATH:qa-$CI_COMMIT_SHA .
   - docker push $CI_REGISTRY/$CI_PROJECT_PATH:qa-$CI_COMMIT_SHA
 
 build-prod-tagged:
   stage: build
   image: docker:stable
   script:
-  - cp docker/prod.Dockerfile ./Dockerfile
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} --target=prod --build-arg PHP_VERSION=${PHP_VERSION} -t $CI_REGISTRY/$CI_PROJECT_PATH:prod-$CI_COMMIT_SHA .
   - docker push $CI_REGISTRY/$CI_PROJECT_PATH:prod-$CI_COMMIT_SHA
@@ -61,7 +60,6 @@ build-latest:
   only:
   - master
   script:
-  - cp docker/prod.Dockerfile ./Dockerfile
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} --target=prod --build-arg PHP_VERSION=${PHP_VERSION} -t $CI_REGISTRY/$CI_PROJECT_PATH:latest .
   - docker push $CI_REGISTRY/$CI_PROJECT_PATH:latest
