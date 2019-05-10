@@ -5,7 +5,7 @@ Laravel/PHP apps.
 
 ## If you're interested
 
-Each app gets a copy of the `docker/` directory and the `stack.yml` file.  The stack file
+Each app gets a copy of the docker files (you can run `./copyto ../code/my-project` to copy them in).  The stack file
 is pretty generic and used as the base for all our apps.  To use it you need to set a few environment variables and create a secret in swarm.  For instance, for an app called 'bingo' you might do :
 
 ```
