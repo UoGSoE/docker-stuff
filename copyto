@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Simple wrapper around 'rsync' to copy the files to a project
-# but ignore the .git directory so we don't clobber anything
+# Simple script to copy the files to a project
 
 set -e
 
@@ -12,11 +11,4 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-if ! type -P "rsync" >> /dev/null;
-then
-    echo "command 'rsync' not found"
-    exit 1
-fi
-
-rsync -av --exclude=".git" ./ "$1"
-
+cp -av docker .dockerignore .env.gitlab .gitlab-ci.yml Dockerfile stack.yml "$1"

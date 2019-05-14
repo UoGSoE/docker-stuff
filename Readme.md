@@ -5,12 +5,13 @@ Laravel/PHP apps.
 
 ## If you're interested
 
-Each app gets a copy of the `docker/` directory and the `stack.yml` file.  The stack file
+Each app gets a copy of the docker files (you can run `./copyto ../code/my-project` to copy them in).  The stack file
 is pretty generic and used as the base for all our apps.  To use it you need to set a few environment variables and create a secret in swarm.  For instance, for an app called 'bingo' you might do :
 
 ```
 # build the image and push to a local registry
-docker build -t 127.0.0.1:5000/bingo -f ./docker/prod.Dockerfile .
+export PHP_VERSION=7.3
+docker build --build-arg=PHP_VERSION=${PHP_VERSION} -t 127.0.0.1:5000/bingo .
 docker push 127.0.0.1:5000/bingo
 
 # create a docker secret from a file called docker.env - this should be your normal laravel app '.env' stuff
@@ -33,6 +34,8 @@ You are using [Traefik](https://traefik.io/) as your proxy and there is a swarm 
 You have a mysql database server (or mysql-router) available in an overlay network called 'mysql' and it's docker container name is 'mysql'.
 
 You have an http get endpoint in your main app available at `/login` - this is used as the healthcheck for the container.  If you want to use something else then change the curl command in `docker/app-healthcheck`.
+
+You have an environment variable called PHP_VERSION that targets the major.minor version you are wanting to use, eg `export PHP_VERSION=7.3`.  The default PHP_VERSION is at the top of the dockerfile if you don't want to use an env variable.
 
 ### Base images
 
@@ -84,7 +87,13 @@ LDAP_PASSWORD=secret
 
 ## Gitlab-ci
 
-There's `.env.gitlab` and `.gitlab-ci.yml` files with the settings we use to run gitlab's CI process.  Feel free to steal them.
+There's `.env.gitlab` and `.gitlab-ci.yml` files with the settings we use to run gitlab's CI process.  Feel free to steal them.  Our gitlab assumed you will have an environment variable set up in gitlab's CI settings for the php version you are targetting, eg `PHP_VERSION` `7.3`.
+
+The gitlab CI setup will build three images :
+
+* `your/repo:qa-${git_sha}` - all the code + dev php packages
+* `your/repo:prod-${git_sha}` - all the code + only production php packages
+* `your/repo:latest` - same as the prod- image, only builds for pushes to master branch
 
 ## Our current setup
 
