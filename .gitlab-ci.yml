@@ -14,6 +14,7 @@ test:
 
   services:
   - mysql:5.7
+  - redis:5.0.4
 
   variables:
     MYSQL_DATABASE: homestead
