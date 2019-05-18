@@ -55,9 +55,13 @@ RUN rm -fr /var/www/html/bootstrap/cache/*.php && \
     php /var/www/html/artisan view:cache && \
     php /var/www/html/artisan route:cache
 
+#- Set up the default healthcheck
+HEALTHCHECK --start-period=30s CMD /usr/local/bin/app-healthcheck
+
+#- And off we go...
 CMD ["/usr/local/bin/start"]
 
-# And build the ci version of the app
+# Build the ci version of the app
 FROM prod as ci
 
 ENV APP_ENV=local
@@ -69,3 +73,4 @@ RUN composer install \
     --no-plugins \
     --no-scripts \
     --prefer-dist
+
