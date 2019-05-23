@@ -36,7 +36,8 @@ COPY --chown=www-data:www-data . /var/www/html
 RUN ln -sf /run/secrets/.env /var/www/html/.env
 
 #- Copy in our front-end assets
-COPY --from=frontend --chown=www-data:www-data /app/public/js /app/public/css /var/www/html/public/
+COPY --from=frontend --chown=www-data:www-data /app/public/js /var/www/html/public/js
+COPY --from=frontend --chown=www-data:www-data /app/public/css /var/www/html/public/css
 COPY --from=frontend --chown=www-data:www-data /app/mix-manifest.json /var/www/html/mix-manifest.json
 
 #- Install all our php non-dev dependencies
