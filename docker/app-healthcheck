@@ -6,17 +6,22 @@ role=${CONTAINER_ROLE:-app}
 
 if [ "$role" = "app" ]; then
 
-    curl -f http://localhost/login || exit 1
+    curl -f http://localhost/ || exit 1
     exit 0
 
 elif [ "$role" = "queue" ]; then
 
-    ps -fe | egrep -q '[h]orizon' || exit 1
+    php /var/www/html/artisan horizon:status | grep -q 'Horizon is running' || exit 1
     exit 0
 
 elif [ "$role" = "scheduler" ]; then
 
     # need to figure something out for this... if at all checkable
+    exit 0
+
+elif [ "$role" = "migrations" ]; then
+
+    # nothing to do here
     exit 0
 
 else
