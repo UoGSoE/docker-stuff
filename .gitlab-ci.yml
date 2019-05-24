@@ -50,6 +50,8 @@ build-qa-tagged:
 build-prod-tagged:
   stage: build
   image: docker:stable
+  only:
+  - master
   script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} --target=prod --build-arg PHP_VERSION=${PHP_VERSION} -t $CI_REGISTRY/$CI_PROJECT_PATH:prod-$CI_COMMIT_SHA .
