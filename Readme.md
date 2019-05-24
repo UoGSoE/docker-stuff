@@ -89,10 +89,10 @@ LDAP_PASSWORD=secret
 
 There's `.env.gitlab` and `.gitlab-ci.yml` files with the settings we use to run gitlab's CI process.  Feel free to steal them.  Our gitlab assumed you will have an environment variable set up in gitlab's CI settings for the php version you are targetting, eg `PHP_VERSION` `7.3`.
 
-The gitlab CI setup will build three images :
+The gitlab CI setup will build two images :
 
 * `your/repo:qa-${git_sha}` - all the code & prod+dev php packages
-* `your/repo:prod-${git_sha}` - all the code & only production php packages
+* `your/repo:prod-${git_sha}` - all the code & only production php packages (only built when pushing to the master branch)
 
 ## Our current setup
 
