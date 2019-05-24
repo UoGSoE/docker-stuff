@@ -30,15 +30,15 @@ COPY docker/app-start docker/app-healthcheck /usr/local/bin/
 RUN chmod u+x /usr/local/bin/app-start /usr/local/bin/app-healthcheck
 
 #- Copy in our code
-COPY --chown=www-data:www-data . /var/www/html
+COPY . /var/www/html
 
 #- Symlink the docker secret to the local .env so Laravel can see it
 RUN ln -sf /run/secrets/.env /var/www/html/.env
 
 #- Copy in our front-end assets
-COPY --from=frontend --chown=www-data:www-data /app/public/js /var/www/html/public/js
-COPY --from=frontend --chown=www-data:www-data /app/public/css /var/www/html/public/css
-COPY --from=frontend --chown=www-data:www-data /app/mix-manifest.json /var/www/html/mix-manifest.json
+COPY --from=frontend /app/public/js /var/www/html/public/js
+COPY --from=frontend /app/public/css /var/www/html/public/css
+COPY --from=frontend /app/mix-manifest.json /var/www/html/mix-manifest.json
 
 #- Install all our php non-dev dependencies
 RUN composer install \
@@ -50,6 +50,7 @@ RUN composer install \
 
 #- Clean up and cache our apps settings/views/routing
 RUN rm -fr /var/www/html/bootstrap/cache/*.php && \
+    chown -R www-data:www-data storage bootstrap/cache && \
     php /var/www/html/artisan storage:link && \
     php /var/www/html/artisan view:cache && \
     php /var/www/html/artisan route:cache

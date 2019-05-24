@@ -1,7 +1,7 @@
 # Docker stuff
 
 This is a WIP repo for our docker/swarm app configs.  Generic as far as possible for our
-Laravel/PHP apps.
+Laravel/PHP apps and used as the base on new projects.
 
 ## If you're interested
 
@@ -9,19 +9,19 @@ Each app gets a copy of the docker files (you can run `./copyto ../code/my-proje
 is pretty generic and used as the base for all our apps.  To use it you need to set a few environment variables and create a secret in swarm.  For instance, for an app called 'bingo' you might do :
 
 ```
-# build the image and push to a local registry
+# set some env variables
 export PHP_VERSION=7.3
-docker build --build-arg=PHP_VERSION=${PHP_VERSION} -t 127.0.0.1:5000/bingo .
-docker push 127.0.0.1:5000/bingo
-
-# create a docker secret from a file called docker.env - this should be your normal laravel app '.env' stuff
-docker secret create bingo-dotenv-20190428 docker.env
-
-# set the deployment environment variables
 export IMAGE_NAME=127.0.0.1:5000/bingo
 export TRAEFIK_BACKEND=bingo-web
 export TRAEFIK_HOSTNAME=bingo.yourdomain.com
 export DOTENV_NAME=bingo-dotenv-20190428
+
+# build the image and push to a local registry
+docker build --build-arg=PHP_VERSION=${PHP_VERSION} -t ${IMAGE_NAME} .
+docker push ${IMAGE_NAME}
+
+# create a docker secret from a file called docker.env - this should be your normal production laravel app '.env' stuff
+docker secret create ${DOTENV_NAME} docker.env
 
 # and deploy
 docker stack deploy -c stack.yml bingo
@@ -33,7 +33,7 @@ You are using [Traefik](https://traefik.io/) as your proxy and there is a swarm 
 
 You have a mysql database server (or mysql-router) available in an overlay network called 'mysql' and it's docker container name is 'mysql'.
 
-You have an http get endpoint in your main app available at `/login` - this is used as the healthcheck for the container.  If you want to use something else then change the curl command in `docker/app-healthcheck`.
+It defaults to doing a 'healthcheck' by making an http get request to '/' every 30 seconds.  If you want to use something else then change the curl command in `docker/app-healthcheck` and/or altering the HEALTHCHECK line in the Dockerfile.
 
 You have an environment variable called PHP_VERSION that targets the major.minor version you are wanting to use, eg `export PHP_VERSION=7.3`.  The default PHP_VERSION is at the top of the dockerfile if you don't want to use an env variable.
 
@@ -91,9 +91,8 @@ There's `.env.gitlab` and `.gitlab-ci.yml` files with the settings we use to run
 
 The gitlab CI setup will build three images :
 
-* `your/repo:qa-${git_sha}` - all the code + dev php packages
-* `your/repo:prod-${git_sha}` - all the code + only production php packages
-* `your/repo:latest` - same as the prod- image, only builds for pushes to master branch
+* `your/repo:qa-${git_sha}` - all the code & prod+dev php packages
+* `your/repo:prod-${git_sha}` - all the code & only production php packages
 
 ## Our current setup
 

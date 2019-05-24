@@ -8,8 +8,6 @@ RUN apt-get update && \
     docker-php-ext-install gd pdo pdo_mysql pdo_sqlite zip gmp bcmath pcntl ldap sysvmsg exif && \
     a2enmod rewrite && \
     rm -rf /var/lib/apt/lists/* && \
-    pecl install pcov && \
-    echo "pcov.enabled = 0" > /usr/local/etc/php/conf.d/pcov.ini && \
     curl -o /tmp/composer-setup.php https://getcomposer.org/installer \
     && curl -o /tmp/composer-setup.sig https://composer.github.io/installer.sig \
     # Make sure we're installing what we think we're installing!
@@ -25,6 +23,7 @@ EXPOSE 80
 
 FROM prod as ci
 ENV DRIVER pcov
-RUN docker-php-ext-enable pcov && \
+RUN pecl install pcov && \
+    docker-php-ext-enable pcov && \
     echo "pcov.enabled = 1" > /usr/local/etc/php/conf.d/pcov.ini
 
