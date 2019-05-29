@@ -49,6 +49,9 @@ services:
         - "traefik.enable=false"
     networks:
       - private
+    secrets:
+      - source: dotenv
+        target: .env
 
   queue:
     image: ${IMAGE_NAME}
@@ -63,9 +66,29 @@ services:
         - "traefik.enable=false"
     networks:
       - private
+    secrets:
+      - source: dotenv
+        target: .env
+
+  migrations:
+    image: ${IMAGE_NAME}
+    logging: *default-logging
+    networks:
+      - private
+    environment:
+      CONTAINER_ROLE: migrations
+    depends_on:
+      - app
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=false"
+    secrets:
+      - source: dotenv
+        target: .env
 
   redis:
-    image: redis:4
+    image: redis:5.0.4
     deploy:
       labels:
         - "traefik.enable=false"
