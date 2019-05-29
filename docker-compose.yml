@@ -1,0 +1,121 @@
+version: "3.7"
+
+x-logging:
+  &default-logging
+  options:
+    max-size: '12m'
+    max-file: '5'
+  driver: json-file
+
+services:
+  app:
+    image: localhost:5000/${IMAGE_NAME}
+    logging: *default-logging
+    environment:
+      CONTAINER_ROLE: app
+    build:
+      context: .
+    secrets:
+      - source: dotenv
+        target: .env
+    depends_on:
+      - redis
+      - mysql
+      - mailhog
+    networks:
+      - proxy
+      - private
+    expose:
+      - "80"
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.backend=${PROJECT_NAME}"
+        - "traefik.docker.network=proxy"
+        - "traefik.frontend.rule=Host:${PROJECT_NAME}.${QA_IP}.xip.io"
+        - "traefik.enable=true"
+        - "traefik.port=80"
+        - "traefik.default.protocol=http"
+
+  scheduler:
+    image: localhost:5000/${IMAGE_NAME}
+    logging: *default-logging
+    environment:
+      CONTAINER_ROLE: scheduler
+    depends_on:
+      - app
+    deploy:
+      labels:
+        - "traefik.enable=false"
+    networks:
+      - private
+
+  queue:
+    image: localhost:5000/${IMAGE_NAME}
+    logging: *default-logging
+    environment:
+      CONTAINER_ROLE: queue
+    depends_on:
+      - app
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=false"
+    networks:
+      - private
+
+  redis:
+    image: redis:4
+    deploy:
+      labels:
+        - "traefik.enable=false"
+    networks:
+      - private
+    volumes:
+      - redis:/data
+
+  mysql:
+    image: mysql:5.7
+    deploy:
+      labels:
+        - "traefik.enable=false"
+    networks:
+      - private
+    volumes:
+      - mysql:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: homestead
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: homestead
+      MYSQL_PASSWORD: secret
+
+  mailhog:
+    image: mailhog/mailhog
+    deploy:
+      labels:
+        - "traefik.backend=${PROJECT_NAME}-mailhog"
+        - "traefik.docker.network=proxy"
+        - "traefik.frontend.rule=Host:${PROJECT_NAME}-mail.${QA_IP}.xip.io"
+        - "traefik.enable=true"
+        - "traefik.port=8025"
+        - "traefik.default.protocol=http"
+    expose:
+      - "8025"
+    networks:
+      - proxy
+      - private
+
+volumes:
+  redis:
+    driver: "local"
+  mysql:
+    driver: "local"
+
+networks:
+  private:
+  proxy:
+    external: true
+
+secrets:
+  dotenv:
+    file: ./.env
