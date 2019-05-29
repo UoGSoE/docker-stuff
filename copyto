@@ -11,4 +11,4 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-cp -av docker .dockerignore .env.gitlab .gitlab-ci.yml Dockerfile stack.yml "$1"
+cp -av docker .dockerignore .env.gitlab .env.qa .gitlab-ci.yml Dockerfile stack.yml docker-compose.yml "$1"

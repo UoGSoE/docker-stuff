@@ -95,7 +95,7 @@ services:
       labels:
         - "traefik.backend=${TRAEFIK_BACKEND}-mailhog"
         - "traefik.docker.network=proxy"
-        - "traefik.frontend.rule=Host:mail-${TRAEFIK_HOSTNAME}
+        - "traefik.frontend.rule=Host:mail-${TRAEFIK_HOSTNAME}"
         - "traefik.enable=true"
         - "traefik.port=8025"
         - "traefik.default.protocol=http"
