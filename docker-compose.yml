@@ -9,7 +9,7 @@ x-logging:
 
 services:
   app:
-    image: localhost:5000/${IMAGE_NAME}
+    image: ${IMAGE_NAME}
     logging: *default-logging
     environment:
       CONTAINER_ROLE: app
@@ -30,15 +30,15 @@ services:
     deploy:
       replicas: 1
       labels:
-        - "traefik.backend=${PROJECT_NAME}"
+        - "traefik.backend=${TRAEFIK_BACKEND}"
         - "traefik.docker.network=proxy"
-        - "traefik.frontend.rule=Host:${PROJECT_NAME}.${QA_IP}.xip.io"
+        - "traefik.frontend.rule=Host:${TRAEFIK_HOSTNAME}"
         - "traefik.enable=true"
         - "traefik.port=80"
         - "traefik.default.protocol=http"
 
   scheduler:
-    image: localhost:5000/${IMAGE_NAME}
+    image: ${IMAGE_NAME}
     logging: *default-logging
     environment:
       CONTAINER_ROLE: scheduler
@@ -51,7 +51,7 @@ services:
       - private
 
   queue:
-    image: localhost:5000/${IMAGE_NAME}
+    image: ${IMAGE_NAME}
     logging: *default-logging
     environment:
       CONTAINER_ROLE: queue
@@ -93,9 +93,9 @@ services:
     image: mailhog/mailhog
     deploy:
       labels:
-        - "traefik.backend=${PROJECT_NAME}-mailhog"
+        - "traefik.backend=${TRAEFIK_BACKEND}-mailhog"
         - "traefik.docker.network=proxy"
-        - "traefik.frontend.rule=Host:${PROJECT_NAME}-mail.${QA_IP}.xip.io"
+        - "traefik.frontend.rule=Host:mail-${TRAEFIK_HOSTNAME}
         - "traefik.enable=true"
         - "traefik.port=8025"
         - "traefik.default.protocol=http"

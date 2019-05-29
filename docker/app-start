@@ -43,6 +43,10 @@ elif [ "$role" = "migrations" ]; then
         sleep 86400
     done
 
+elif [ "$role" = "test" ]; then
+
+    php /var/www/html/vendor/bin/phpunit --colors=never
+
 else
     echo "Could not match the container role \"$role\""
     exit 1
