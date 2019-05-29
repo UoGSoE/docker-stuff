@@ -27,7 +27,7 @@ docker secret create ${DOTENV_NAME} docker.env
 docker stack deploy -c stack.yml bingo
 ```
 
-There is also a `docker-compose.yml` file that you can use for QA/testing/debugging.  it will use your local `.env` file inside the containers.  You also need to set a couple of environment variables as above before starting it, specifically the `IMAGE_NAME`, `TRAEFIK_BACKEND` and `TRAEFIK_HOSTNAME` need to be set.  It still assumes you have `traefik` running as below.
+There is also a `docker-compose.yml` file that you can use for QA/testing/debugging.  it will use a local `.env.qa` file as the laravel .env inside the containers.  You also need to set a couple of environment variables as above before starting it, specifically the `IMAGE_NAME`, `TRAEFIK_BACKEND` and `TRAEFIK_HOSTNAME` need to be set.  It still assumes you have `traefik` running as below.
 
 The 'compose' version will run the app, and also a local copy of mysql and redis.  It will also spin up a copy of [Mailhog](https://github.com/mailhog/MailHog) to trap outgoing mail and make it available at `mail-${TRAEFIK_HOSTNAME}`.
 

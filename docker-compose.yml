@@ -118,4 +118,4 @@ networks:
 
 secrets:
   dotenv:
-    file: ./.env
+    file: ./.env.qa
