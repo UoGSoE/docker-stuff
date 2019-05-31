@@ -15,6 +15,40 @@ RUN npm install && \
     npm run production && \
     npm cache clean --force
 
+# Install the prod php packages
+FROM uogsoe/soe-php-apache:${PHP_VERSION} as prod-composer
+
+USER www-data
+
+WORKDIR /var/www/html
+
+COPY composer.* /var/www/html/
+COPY database/ /var/www/html/database/
+
+RUN composer install \
+    --no-interaction \
+    --no-plugins \
+    --no-scripts \
+    --no-dev \
+    --prefer-dist
+
+# Install the qa/dev/test php packages
+FROM uogsoe/soe-php-apache:${PHP_VERSION} as qa-composer
+
+USER www-data
+
+WORKDIR /var/www/html
+
+COPY composer.* /var/www/html/
+COPY database/ /var/www/html/database/
+
+RUN composer install \
+    --no-interaction \
+    --no-plugins \
+    --no-scripts \
+    --prefer-dist
+
+
 # And build the prod app
 FROM uogsoe/soe-php-apache:${PHP_VERSION} as prod
 
@@ -39,14 +73,15 @@ RUN ln -sf /run/secrets/.env /var/www/html/.env
 COPY --from=frontend /app/public/js /var/www/html/public/js
 COPY --from=frontend /app/public/css /var/www/html/public/css
 COPY --from=frontend /app/mix-manifest.json /var/www/html/mix-manifest.json
+COPY --from=prod-composer /var/www/html/vendor /var/www/html/vendor
 
 #- Install all our php non-dev dependencies
-RUN composer install \
-    --no-interaction \
-    --no-plugins \
-    --no-scripts \
-    --no-dev \
-    --prefer-dist
+# RUN composer install \
+#     --no-interaction \
+#     --no-plugins \
+#     --no-scripts \
+#     --no-dev \
+#     --prefer-dist
 
 #- Clean up and cache our apps settings/views/routing
 RUN rm -fr /var/www/html/bootstrap/cache/*.php && \
@@ -68,9 +103,5 @@ ENV APP_ENV=local
 ENV APP_DEBUG=1
 
 #- Install our php dependencies including the dev ones
-RUN composer install \
-    --no-interaction \
-    --no-plugins \
-    --no-scripts \
-    --prefer-dist
+COPY --from=qa-composer /var/www/html/vendor /var/www/html/vendor
 
