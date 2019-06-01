@@ -1,7 +1,6 @@
 # Docker stuff
 
-This is a WIP repo for our docker/swarm app configs.  Generic as far as possible for our
-Laravel/PHP apps and used as the base on new projects.
+This is the base repo for our docker/swarm app configs.  Generic as far as possible for our Laravel/PHP apps and used as the base on new projects.  Ideally they can be used 'as it' outside of special-case apps.
 
 ## If you're interested
 
