@@ -39,9 +39,7 @@ RUN ln -sf /run/secrets/.env /var/www/html/.env
 #- copy the composer files in so we can resolve the dep's
 COPY composer.* /var/www/html/
 
-#- copy the database folder to make laravel's composer scripts happy
-COPY database/ /var/www/html/database/
-
+#- install our php dep's
 USER nobody
 RUN composer install \
     --no-interaction \
