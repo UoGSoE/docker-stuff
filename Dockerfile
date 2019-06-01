@@ -36,9 +36,6 @@ COPY . /var/www/html
 #- Symlink the docker secret to the local .env so Laravel can see it
 RUN ln -sf /run/secrets/.env /var/www/html/.env
 
-#- copy the composer files in so we can resolve the dep's
-COPY composer.* /var/www/html/
-
 #- install our php dep's
 USER nobody
 RUN composer install \
