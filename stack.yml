@@ -17,6 +17,9 @@ x-deploy:
   replicas: 1
   labels:
     - "traefik.enable=false"
+  placement:
+    constraints:
+      - node.role == worker
 
 services:
   app:
@@ -34,6 +37,11 @@ services:
         target: .env
     deploy:
       replicas: 3
+      placement:
+        constraints:
+          - node.role == worker
+        preferences:
+          - spread: node.labels.site
       labels:
         - "traefik.backend=${TRAEFIK_BACKEND}"
         - "traefik.docker.network=proxy"
