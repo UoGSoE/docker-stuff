@@ -1,6 +1,11 @@
 stages:
+  - build-qa
   - test
-  - build
+  - build-prod
+
+variables:
+  QA_IMAGE_NAME: $CI_REGISTRY/$CI_PROJECT_PATH:qa-$CI_COMMIT_SHA
+  PROD_IMAGE_NAME: $CI_REGISTRY/$CI_PROJECT_PATH:prod-$CI_COMMIT_SHA
 
 # This folder is cached between builds
 # http://docs.gitlab.com/ce/ci/yaml/README.html#cache
@@ -10,7 +15,7 @@ cache:
   # - node_modules/
 
 test:
-  image: uogsoe/soe-php-apache:${PHP_VERSION}-ci
+  image: $QA_IMAGE_NAME
 
   services:
   - mysql:5.7
@@ -24,7 +29,6 @@ test:
 
   before_script:
   - cp .env.gitlab .env
-  - composer install
   - php artisan key:generate
   - php artisan config:clear
   - php artisan migrate:fresh
@@ -40,20 +44,20 @@ test:
   - php vendor/bin/phpunit --colors=never
 
 build-qa-tagged:
-  stage: build
+  stage: build-qa
   image: docker:stable
   script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} --target=ci --build-arg PHP_VERSION=${PHP_VERSION} -t $CI_REGISTRY/$CI_PROJECT_PATH:qa-$CI_COMMIT_SHA .
-  - docker push $CI_REGISTRY/$CI_PROJECT_PATH:qa-$CI_COMMIT_SHA
+  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} --target=ci --build-arg PHP_VERSION=${PHP_VERSION} -t $QA_IMAGE_NAME .
+  - docker push $QA_IMAGE_NAME
 
 build-prod-tagged:
-  stage: build
+  stage: build-prod
   image: docker:stable
   only:
   - master
   script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} --target=prod --build-arg PHP_VERSION=${PHP_VERSION} -t $CI_REGISTRY/$CI_PROJECT_PATH:prod-$CI_COMMIT_SHA .
-  - docker push $CI_REGISTRY/$CI_PROJECT_PATH:prod-$CI_COMMIT_SHA
+  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} --target=prod --build-arg PHP_VERSION=${PHP_VERSION} -t $PROD_IMAGE_NAME .
+  - docker push $PROD_IMAGE_NAME
 
