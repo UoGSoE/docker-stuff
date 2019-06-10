@@ -7,7 +7,12 @@ FROM node:10 as frontend
 USER node
 WORKDIR /home/node
 
-RUN mkdir -p /home/node/public /home/node/resources
+RUN mkdir -p /home/node/public/css /home/node/public/js /home/node/resources
+
+USER root
+# workaround for mix.version() webpack bug
+RUN ln -s /home/node/public /public
+USER node
 
 COPY --chown=node:node package*.json webpack.mix.js /home/node/
 COPY --chown=node:node resources/ /home/node/resources/
