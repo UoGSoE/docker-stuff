@@ -27,12 +27,6 @@ test:
     MYSQL_USER: homestead
     MYSQL_PASSWORD: secret
 
-  before_script:
-  - cp .env.gitlab .env
-  - php artisan key:generate
-  - php artisan config:clear
-  - php artisan migrate:fresh
-
   # If you need Node.js
   #- curl -sL https://deb.nodesource.com/setup_10.x | bash -
   #- apt-get install -y nodejs
@@ -41,6 +35,14 @@ test:
 
   script:
   # - php vendor/bin/phpunit --coverage-text --colors=never
+  - cd /var/www/html
+  - mkdir -p /run/secrets
+  - cp -f .env.gitlab /run/secrets/.env
+  - export APP_ENV=testing
+  - php artisan key:generate
+  - php artisan config:clear
+  - php artisan migrate:fresh
+  - cat .env
   - php vendor/bin/phpunit --colors=never
 
 build-qa-tagged:
@@ -60,4 +62,3 @@ build-prod-tagged:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} --target=prod --build-arg PHP_VERSION=${PHP_VERSION} -t $PROD_IMAGE_NAME .
   - docker push $PROD_IMAGE_NAME
-
