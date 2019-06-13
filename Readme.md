@@ -107,8 +107,6 @@ The gitlab CI setup will build two images :
 * `your/repo:qa-${git_sha}` - all the code & prod+dev php packages
 * `your/repo:prod-${git_sha}` - all the code & only production php packages (only built when pushing to the master branch)
 
-We're still trying to figure out a good way to make gitlab use the images you build in conjuction with other containers while running tests - so at the moment the tests are running in a 'very close to prod, but not _exactly_ the same' image.  If anyone knows a good way I'd welcome a PR ;-)
-
 ## Our current setup
 
 We have a small(ish) docker swarm.  Each node runs a local container registry on 127.0.0.1:5000.  We have an on-premise Gitlab install which acts as our source controller, CI runner and container registry.
