@@ -2,6 +2,9 @@ ARG PHP_VERSION
 
 FROM php:${PHP_VERSION}-apache as prod
 
+ENV TZ=Europe/London
+ENV LANG=en_GB.UTF-8
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libfreetype6-dev libjpeg62-turbo-dev libpng-dev libgmp-dev libldap2-dev netcat sqlite3 libsqlite3-dev libzip-dev unzip && \
     docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
@@ -14,10 +17,12 @@ RUN apt-get update && \
     && php -r "if (hash('SHA384', file_get_contents('/tmp/composer-setup.php')) !== trim(file_get_contents('/tmp/composer-setup.sig'))) { unlink('/tmp/composer-setup.php'); echo 'Invalid installer' . PHP_EOL; exit(1); }" \
     && php /tmp/composer-setup.php --no-ansi --install-dir=/usr/local/bin --filename=composer --snapshot \
     && rm -f /tmp/composer-setup.* \
-    && composer global require hirak/prestissimo
+    && composer global require hirak/prestissimo \
+    && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
+    && echo $TZ > /etc/timezone
 
 COPY vhost.conf /etc/apache2/sites-available/000-default.conf
-COPY uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+COPY uploads.ini timezone.ini /usr/local/etc/php/conf.d/
 
 EXPOSE 80
 

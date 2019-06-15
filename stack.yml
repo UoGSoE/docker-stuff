@@ -20,6 +20,10 @@ x-deploy:
   placement:
     constraints:
       - node.role == worker
+  update_config:
+    parallelism: 1
+    failure_action: rollback
+    order: start-first
 
 services:
   app:
@@ -42,6 +46,10 @@ services:
           - node.role == worker
         preferences:
           - spread: node.labels.site
+      update_config:
+        parallelism: 1
+        failure_action: rollback
+      order: start-first
       labels:
         - "traefik.backend=${TRAEFIK_BACKEND}"
         - "traefik.docker.network=proxy"
