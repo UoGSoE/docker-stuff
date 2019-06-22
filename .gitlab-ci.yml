@@ -4,6 +4,7 @@
 # STACK_NAME (eg, 'amazingapp' - as in 'docker stack deploy $STACK_NAME')
 # TRAEFIK_BACKEND (eg 'amazingapp-web' - label for traefik dashboard)
 # TRAEFIK_HOSTNAME (eg, amazing.domain.ac.uk - hostname your app will be available on)
+# DOTENV (*production* .env file contents)
 # QA_SERVER (eg, qaserver.domain.ac.uk)
 # QA_SSH_KEY (private key for the deployer user on QA)
 # PROD_SERVER (see above)
@@ -108,7 +109,10 @@ deploy_to_prod:
   - export IMAGE_NAME=$LOCAL_PROD_IMAGE_NAME
   - export TRAEFIK_BACKEND=$TRAEFIK_BACKEND
   - export TRAEFIK_HOSTNAME=$TRAEFIK_HOSTNAME
+  - export EPOCH=`date +%s`
+  - export DOTENV_NAME="${CI_PROJECT_PATH_SLUG}-dotenv-${EPOCH}"
   - echo "$PROD_SSH_KEY" | tr -d '\r' | ssh-add - > /dev/null
   - mkdir ~/.ssh
   - ssh-keyscan ${PROD_SERVER} > ~/.ssh/known_hosts
+  - echo ${DOTENV} | docker -H ssh://deployer@${PROD_SERVER} secret create ${DOTENV_NAME} -
   - docker -H ssh://deployer@${PROD_SERVER} stack deploy -c stack.yml ${STACK_NAME}
