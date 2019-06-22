@@ -109,8 +109,8 @@ deploy_to_prod:
   - export IMAGE_NAME=$LOCAL_PROD_IMAGE_NAME
   - export TRAEFIK_BACKEND=$TRAEFIK_BACKEND
   - export TRAEFIK_HOSTNAME=$TRAEFIK_HOSTNAME
-  - export EPOCH=`date +%s`
-  - export DOTENV_NAME="${CI_PROJECT_PATH_SLUG}-dotenv-${EPOCH}"
+  - export NOW=`date +%Y-%m-%d-%H-%M-%S`
+  - export DOTENV_NAME="${CI_PROJECT_PATH_SLUG}-dotenv-${NOW}"
   - echo "$PROD_SSH_KEY" | tr -d '\r' | ssh-add - > /dev/null
   - mkdir ~/.ssh
   - ssh-keyscan ${PROD_SERVER} > ~/.ssh/known_hosts
