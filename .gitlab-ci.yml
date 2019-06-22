@@ -1,11 +1,29 @@
+#
+# Variables which should be set in the gitlab project or group :
+# 
+# STACK_NAME (eg, 'amazingapp' - as in 'docker stack deploy $STACK_NAME')
+# TRAEFIK_BACKEND (eg 'amazingapp-web' - label for traefik dashboard)
+# TRAEFIK_HOSTNAME (eg, amazing.domain.ac.uk - hostname your app will be available on)
+# QA_SERVER (eg, qaserver.domain.ac.uk)
+# QA_SSH_KEY (private key for the deployer user on QA)
+# PROD_SERVER (see above)
+# PROD_SSH_KEY (see above)
+#
+# There should also be two environments in your gitlab project - 'prod' and 'qa'
+#
+
 stages:
   - build-qa
   - test
   - build-prod
+  - deploy-qa
+  - deploy-prod
 
 variables:
   QA_IMAGE_NAME: $CI_REGISTRY/$CI_PROJECT_PATH:qa-$CI_COMMIT_SHA
   PROD_IMAGE_NAME: $CI_REGISTRY/$CI_PROJECT_PATH:prod-$CI_COMMIT_SHA
+  LOCAL_QA_IMAGE_NAME: localhost:5000/$CI_PROJECT_PATH:qa-$CI_COMMIT_SHA
+  LOCAL_PROD_IMAGE_NAME: localhost:5000/$CI_PROJECT_PATH:prod-$CI_COMMIT_SHA
 
 # This folder is cached between builds
 # http://docs.gitlab.com/ce/ci/yaml/README.html#cache
@@ -62,3 +80,35 @@ build-prod-tagged:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} --target=prod -t $PROD_IMAGE_NAME .
   - docker push $PROD_IMAGE_NAME
+
+deploy_to_qa:
+  stage: deploy-qa
+  when: manual
+  environment: qa
+  image: docker:stable
+  script:
+  - apk add -qU openssh
+  - eval $(ssh-agent -s)
+  - export IMAGE_NAME=$LOCAL_QA_IMAGE_NAME
+  - export TRAEFIK_BACKEND=$TRAEFIK_BACKEND
+  - export TRAEFIK_HOSTNAME=$TRAEFIK_HOSTNAME
+  - echo "$QA_SSH_KEY" | tr -d '\r' | ssh-add - > /dev/null
+  - mkdir ~/.ssh
+  - ssh-keyscan ${QA_SERVER} > ~/.ssh/known_hosts
+  - docker -H ssh://deployer@${QA_SERVER} stack deploy -c docker-compose.yml ${STACK_NAME}
+
+deploy_to_prod:
+  stage: deploy-prod
+  when: manual
+  environment: prod
+  image: docker:stable
+  script:
+  - apk add -qU openssh
+  - eval $(ssh-agent -s)
+  - export IMAGE_NAME=$LOCAL_PROD_IMAGE_NAME
+  - export TRAEFIK_BACKEND=$TRAEFIK_BACKEND
+  - export TRAEFIK_HOSTNAME=$TRAEFIK_HOSTNAME
+  - echo "$PROD_SSH_KEY" | tr -d '\r' | ssh-add - > /dev/null
+  - mkdir ~/.ssh
+  - ssh-keyscan ${PROD_SERVER} > ~/.ssh/known_hosts
+  - docker -H ssh://deployer@${PROD_SERVER} stack deploy -c stack.yml ${STACK_NAME}
