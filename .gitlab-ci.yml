@@ -62,7 +62,7 @@ test:
   - php artisan config:clear
   - php artisan migrate:fresh
   - cat .env
-  - php vendor/bin/phpunit --colors=never
+  - php vendor/bin/phpunit --colors=never --testdox
 
 build-qa-tagged:
   stage: build-qa
