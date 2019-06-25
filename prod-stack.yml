@@ -101,7 +101,8 @@ services:
         target: .env
 
   redis:
-    image: redis:5.0.4
+    # redis v5.0.5 tag as of 2019-06-25
+    image: redis:sha256:ca2d9251c2818df48c6598e01a5bdeab46040dc7ab236abe075d7c7343465177
     deploy: *default-deploy
     logging: *default-logging
     networks:

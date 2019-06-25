@@ -88,7 +88,7 @@ services:
         target: .env
 
   redis:
-    image: redis:5.0.4
+    image: redis:5.0.5
     deploy:
       labels:
         - "traefik.enable=false"
