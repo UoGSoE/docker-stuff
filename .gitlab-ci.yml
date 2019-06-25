@@ -93,10 +93,13 @@ deploy_to_qa:
   - export IMAGE_NAME=$LOCAL_QA_IMAGE_NAME
   - export TRAEFIK_BACKEND=$TRAEFIK_BACKEND
   - export TRAEFIK_HOSTNAME=$TRAEFIK_HOSTNAME
+  - export NOW=`date +%Y-%m-%d-%H-%M-%S`
+  - export DOTENV_NAME="${CI_PROJECT_PATH_SLUG}-qa-dotenv-${NOW}"
   - echo "$QA_SSH_KEY" | tr -d '\r' | ssh-add - > /dev/null
   - mkdir ~/.ssh
   - ssh-keyscan ${QA_SERVER} > ~/.ssh/known_hosts
-  - docker -H ssh://deployer@${QA_SERVER} stack deploy -c docker-compose.yml ${STACK_NAME}
+  - echo ${DOTENV} | docker -H ssh://deployer@${PROD_SERVER} secret create ${DOTENV_NAME} -
+  - docker -H ssh://deployer@${QA_SERVER} stack deploy -c qa-stack.yml ${STACK_NAME}
 
 deploy_to_prod:
   stage: deploy-prod
@@ -110,9 +113,9 @@ deploy_to_prod:
   - export TRAEFIK_BACKEND=$TRAEFIK_BACKEND
   - export TRAEFIK_HOSTNAME=$TRAEFIK_HOSTNAME
   - export NOW=`date +%Y-%m-%d-%H-%M-%S`
-  - export DOTENV_NAME="${CI_PROJECT_PATH_SLUG}-dotenv-${NOW}"
+  - export DOTENV_NAME="${CI_PROJECT_PATH_SLUG}-prod-dotenv-${NOW}"
   - echo "$PROD_SSH_KEY" | tr -d '\r' | ssh-add - > /dev/null
   - mkdir ~/.ssh
   - ssh-keyscan ${PROD_SERVER} > ~/.ssh/known_hosts
   - echo ${DOTENV} | docker -H ssh://deployer@${PROD_SERVER} secret create ${DOTENV_NAME} -
-  - docker -H ssh://deployer@${PROD_SERVER} stack deploy -c stack.yml ${STACK_NAME}
+  - docker -H ssh://deployer@${PROD_SERVER} stack deploy -c prod-stack.yml ${STACK_NAME}
