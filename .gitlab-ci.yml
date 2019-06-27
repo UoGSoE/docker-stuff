@@ -4,9 +4,10 @@
 # STACK_NAME (eg, 'amazingapp' - as in 'docker stack deploy $STACK_NAME')
 # TRAEFIK_BACKEND (eg 'amazingapp-web' - label for traefik dashboard)
 # TRAEFIK_HOSTNAME (eg, amazing.domain.ac.uk - hostname your app will be available on)
-# DOTENV (*production* .env file contents)
+# QA_DOTENV (*qa/test* .env file contents)
 # QA_SERVER (eg, qaserver.domain.ac.uk)
 # QA_SSH_KEY (private key for the deployer user on QA)
+# PROD_DOTENV (*production* .env file contents)
 # PROD_SERVER (see above)
 # PROD_SSH_KEY (see above)
 #
