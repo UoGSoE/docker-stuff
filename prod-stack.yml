@@ -69,6 +69,7 @@ services:
   queue:
     image: ${IMAGE_NAME}
     deploy: *default-deploy
+    stop_grace_period: 30s
     networks:
       - mysql
       - default
