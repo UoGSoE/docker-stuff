@@ -102,6 +102,7 @@ deploy_to_qa:
   - ssh-keyscan ${QA_SERVER} > ~/.ssh/known_hosts
   - chmod 644 ~/.ssh/known_hosts
   - echo "${QA_DOTENV}" | docker -H ssh://deployer@${QA_SERVER} secret create ${DOTENV_NAME} -
+  - echo "Deploying stack ${STACK_NAME} image ${IMAGE_NAME} with secret ${DOTENV_NAME}"
   - docker -H ssh://deployer@${QA_SERVER} stack deploy -c qa-stack.yml ${STACK_NAME}
 
 deploy_to_prod:
@@ -123,4 +124,5 @@ deploy_to_prod:
   - ssh-keyscan ${PROD_SERVER} > ~/.ssh/known_hosts
   - chmod 644 ~/.ssh/known_hosts
   - echo "${PROD_DOTENV}" | docker -H ssh://deployer@${PROD_SERVER} secret create ${DOTENV_NAME} -
+  - echo "Deploying stack ${STACK_NAME} image ${IMAGE_NAME} with secret ${DOTENV_NAME}"
   - docker -H ssh://deployer@${PROD_SERVER} stack deploy -c prod-stack.yml ${STACK_NAME}
