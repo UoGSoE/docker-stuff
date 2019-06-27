@@ -30,5 +30,7 @@ FROM prod as ci
 ENV DRIVER pcov
 RUN pecl install pcov && \
     docker-php-ext-enable pcov && \
-    echo "pcov.enabled = 1" > /usr/local/etc/php/conf.d/pcov.ini
+    echo "pcov.enabled = 1" > /usr/local/etc/php/conf.d/pcov.ini && \
+    curl -o /usr/local/bin/security-checker https://get.sensiolabs.org/security-checker.phar
+
 

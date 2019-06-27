@@ -65,6 +65,7 @@ test:
   - php artisan migrate:fresh
   - cat .env
   - php vendor/bin/phpunit --colors=never --testdox
+  - [ -f /usr/local/bin/security-checker ] && php /usr/local/bin/security-checker ./composer.lock
 
 build-qa-tagged:
   stage: build-qa
