@@ -6,12 +6,6 @@ x-logging:
     max-size: '12m'
     max-file: '5'
   driver: json-file
-x-healthcheck:
-  &default-healthcheck
-  test: ["CMD", "/usr/local/bin/app-healthcheck"]
-  interval: 5m
-  timeout: 5s
-  start_period: 30s
 x-deploy:
   &default-deploy
   replicas: 1
@@ -57,7 +51,6 @@ services:
         - "traefik.enable=true"
         - "traefik.port=80"
         - "traefik.default.protocol=http"
-    healthcheck: *default-healthcheck
     logging: *default-logging
 
   scheduler:
@@ -71,7 +64,6 @@ services:
     secrets:
       - source: dotenv
         target: .env
-    healthcheck: *default-healthcheck
     logging: *default-logging
 
   queue:
@@ -85,7 +77,6 @@ services:
     secrets:
       - source: dotenv
         target: .env
-    healthcheck: *default-healthcheck
     logging: *default-logging
 
   migrations:
@@ -105,7 +96,7 @@ services:
     # you can get the sha of an image by doing :
     #  docker pull redis:5.0.5
     #  docker images --digests | grep redis
-    image: redis:sha256:ca2d9251c2818df48c6598e01a5bdeab46040dc7ab236abe075d7c7343465177
+    image: redis@sha256:ca2d9251c2818df48c6598e01a5bdeab46040dc7ab236abe075d7c7343465177
     deploy: *default-deploy
     logging: *default-logging
     networks:
