@@ -5,6 +5,11 @@ FROM php:${PHP_VERSION}-apache as prod
 ENV TZ=Europe/London
 ENV LANG=en_GB.UTF-8
 
+# Note: we only install reliable 1st-party php extensions here.
+#       If your app needs custom ones install them in the apps own
+#       Dockerfile _and pin the versions_! Eg:
+#       RUN pecl install memcached-2.2.0 && docker-php-ext-enable memcached
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libfreetype6-dev libjpeg62-turbo-dev libpng-dev libgmp-dev libldap2-dev netcat sqlite3 libsqlite3-dev libzip-dev unzip && \
     docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
@@ -27,6 +32,10 @@ COPY uploads.ini timezone.ini /usr/local/etc/php/conf.d/
 EXPOSE 80
 
 FROM prod as ci
+# The only additions for CI/QA are the 'pcov' extension by PHP internals developer
+# Joe Watkins.  It provides code-coverage statistics without slowing down code.
+# We also pull in the symfony/sensiolabs php security scanner to check the
+# php dependancies (which doesn't provide any kind of signature to verify it, oddly)
 ENV DRIVER pcov
 RUN pecl install pcov && \
     docker-php-ext-enable pcov && \
