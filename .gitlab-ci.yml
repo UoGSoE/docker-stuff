@@ -97,8 +97,10 @@ deploy_to_qa:
   - export DOTENV_NAME="${CI_PROJECT_PATH_SLUG}-qa-dotenv-${NOW}"
   - echo "$QA_SSH_KEY" | tr -d '\r' | ssh-add - > /dev/null
   - mkdir ~/.ssh
+  - chmod 700 ~/.ssh
   - ssh-keyscan ${QA_SERVER} > ~/.ssh/known_hosts
-  - echo ${DOTENV} | docker -H ssh://deployer@${PROD_SERVER} secret create ${DOTENV_NAME} -
+  - chmod 644 ~/.ssh/known_hosts
+  - echo "${QA_DOTENV}" | docker -H ssh://deployer@${QA_SERVER} secret create ${DOTENV_NAME} -
   - docker -H ssh://deployer@${QA_SERVER} stack deploy -c qa-stack.yml ${STACK_NAME}
 
 deploy_to_prod:
@@ -116,6 +118,8 @@ deploy_to_prod:
   - export DOTENV_NAME="${CI_PROJECT_PATH_SLUG}-prod-dotenv-${NOW}"
   - echo "$PROD_SSH_KEY" | tr -d '\r' | ssh-add - > /dev/null
   - mkdir ~/.ssh
+  - chmod 700 ~/.ssh
   - ssh-keyscan ${PROD_SERVER} > ~/.ssh/known_hosts
-  - echo ${DOTENV} | docker -H ssh://deployer@${PROD_SERVER} secret create ${DOTENV_NAME} -
+  - chmod 644 ~/.ssh/known_hosts
+  - echo "${PROD_DOTENV}" | docker -H ssh://deployer@${PROD_SERVER} secret create ${DOTENV_NAME} -
   - docker -H ssh://deployer@${PROD_SERVER} stack deploy -c prod-stack.yml ${STACK_NAME}
