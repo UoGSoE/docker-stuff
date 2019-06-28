@@ -1,6 +1,6 @@
 # Docker stuff
 
-This is the base repo for our docker/swarm app configs.  Generic as far as possible for our Laravel/PHP apps and used as the base on new projects.  Ideally they can be used 'as it' outside of special-case apps.
+This is the base repo for our docker/swarm app configs.  Generic as far as possible for our Laravel/PHP apps and used as the base on new projects.  Ideally they can be used 'as is' outside of special-case apps.
 
 ## If you're interested
 
@@ -106,7 +106,7 @@ LDAP_PASSWORD=secret
 
 ## Gitlab-ci
 
-There's `.env.gitlab` and `.gitlab-ci.yml` files with the settings we use to run gitlab's CI process.  Feel free to steal them.  Our gitlab assumed you will have an environment variable set up in gitlab's CI settings for the php version you are targetting, eg `PHP_VERSION` `7.3`.
+There's `.env.gitlab` and `.gitlab-ci.yml` files with the settings we use to run gitlab's CI process.  Feel free to steal them.  Our gitlab assumed you will have an environment variable set up in gitlab's CI settings for the php version you are targetting, eg `PHP_VERSION` `7.3`.  There are a few other variables you should set too - they are detailed at the top of the `.gitlab-ci.yml` file.
 
 The gitlab CI setup will build two images :
 
