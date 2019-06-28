@@ -40,7 +40,6 @@ test:
 
   services:
   - mysql:5.7
-  - redis:5.0.4
 
   variables:
     MYSQL_DATABASE: homestead
@@ -65,7 +64,7 @@ test:
   - php artisan migrate:fresh
   - cat .env
   - php vendor/bin/phpunit --colors=never --testdox
-  - [ -f /usr/local/bin/security-checker ] && php /usr/local/bin/security-checker ./composer.lock
+  - if [[ -f /usr/local/bin/security-checker ]]; then php /usr/local/bin/security-checker security:check ./composer.lock ; fi
 
 build-qa-tagged:
   stage: build-qa
