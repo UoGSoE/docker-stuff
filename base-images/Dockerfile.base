@@ -34,12 +34,9 @@ EXPOSE 80
 FROM prod as ci
 # The only additions for CI/QA are the 'pcov' extension by PHP internals developer
 # Joe Watkins.  It provides code-coverage statistics without slowing down code.
-# We also pull in the symfony/sensiolabs php security scanner to check the
-# php dependancies (which doesn't provide any kind of signature to verify it, oddly)
 ENV DRIVER pcov
 RUN pecl install pcov && \
     docker-php-ext-enable pcov && \
-    echo "pcov.enabled = 1" > /usr/local/etc/php/conf.d/pcov.ini && \
-    curl -o /usr/local/bin/security-checker https://get.sensiolabs.org/security-checker.phar
+    echo "pcov.enabled = 1" > /usr/local/etc/php/conf.d/pcov.ini
 
 
