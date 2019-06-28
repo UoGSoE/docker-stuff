@@ -5,24 +5,27 @@ FROM php:${PHP_VERSION}-apache as prod
 ENV TZ=Europe/London
 ENV LANG=en_GB.UTF-8
 
-# Note: we only install reliable 1st-party php extensions here.
+# Note: we only install reliable/core 1st-party php extensions here.
 #       If your app needs custom ones install them in the apps own
 #       Dockerfile _and pin the versions_! Eg:
 #       RUN pecl install memcached-2.2.0 && docker-php-ext-enable memcached
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends libfreetype6-dev libjpeg62-turbo-dev libpng-dev libgmp-dev libldap2-dev netcat sqlite3 libsqlite3-dev libzip-dev unzip && \
-    docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
-    docker-php-ext-install gd pdo pdo_mysql pdo_sqlite zip gmp bcmath pcntl ldap sysvmsg exif && \
-    a2enmod rewrite && \
-    rm -rf /var/lib/apt/lists/* && \
-    curl -o /tmp/composer-setup.php https://getcomposer.org/installer \
+RUN apt-get update \
+    # install php extensions
+    && apt-get install -y --no-install-recommends libfreetype6-dev libjpeg62-turbo-dev libpng-dev libgmp-dev libldap2-dev netcat sqlite3 libsqlite3-dev libzip-dev unzip \
+    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+    && docker-php-ext-install gd pdo pdo_mysql pdo_sqlite zip gmp bcmath pcntl ldap sysvmsg exif \
+    && a2enmod rewrite \
+    && rm -rf /var/lib/apt/lists/* \
+    # install composer
+    && curl -o /tmp/composer-setup.php https://getcomposer.org/installer \
     && curl -o /tmp/composer-setup.sig https://composer.github.io/installer.sig \
-    # Make sure we're installing what we think we're installing!
     && php -r "if (hash('SHA384', file_get_contents('/tmp/composer-setup.php')) !== trim(file_get_contents('/tmp/composer-setup.sig'))) { unlink('/tmp/composer-setup.php'); echo 'Invalid installer' . PHP_EOL; exit(1); }" \
     && php /tmp/composer-setup.php --no-ansi --install-dir=/usr/local/bin --filename=composer --snapshot \
     && rm -f /tmp/composer-setup.* \
+    # enable parallel composer package installation
     && composer global require hirak/prestissimo \
+    # set the system timezone
     && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
     && echo $TZ > /etc/timezone
 
@@ -32,11 +35,12 @@ COPY uploads.ini timezone.ini /usr/local/etc/php/conf.d/
 EXPOSE 80
 
 FROM prod as ci
-# The only additions for CI/QA are the 'pcov' extension by PHP internals developer
+# The only additions for CI/QA is the 'pcov' extension by PHP internals developer
 # Joe Watkins.  It provides code-coverage statistics without slowing down code.
+# https://github.com/krakjoe/pcov
 ENV DRIVER pcov
-RUN pecl install pcov && \
-    docker-php-ext-enable pcov && \
-    echo "pcov.enabled = 1" > /usr/local/etc/php/conf.d/pcov.ini
+RUN pecl install pcov \
+    && docker-php-ext-enable pcov \
+    && echo "pcov.enabled = 1" > /usr/local/etc/php/conf.d/pcov.ini
 
 
