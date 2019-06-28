@@ -84,8 +84,8 @@ RUN composer install \
     --prefer-dist
 USER root
 
-#- Clear the caches
-RUN rm -fr /var/www/html/bootstrap/cache/*.php && \
+#- Install sensiolabs security scanner and clear the caches
+RUN curl -o /usr/local/bin/security-checker https://get.sensiolabs.org/security-checker.phar && \
     php /var/www/html/artisan view:clear && \
     php /var/www/html/artisan cache:clear
 
