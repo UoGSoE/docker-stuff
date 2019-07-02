@@ -14,7 +14,7 @@ USER root
 RUN ln -s /home/node/public /public
 USER node
 
-COPY --chown=node:node package*.json webpack.mix.js /home/node/
+COPY --chown=node:node package*.json webpack.mix.js .babelrc* /home/node/
 COPY --chown=node:node resources/ /home/node/resources/
 
 RUN npm install && \
