@@ -1,5 +1,7 @@
 version: "3.7"
 
+# See https://github.com/UoGSoE/docker-stuff for the origins of this file
+
 x-logging:
   &default-logging
   options:
