@@ -13,3 +13,13 @@ docker pull uogsoe/soe-php-apache:7.2
 docker pull uogsoe/soe-php-apache:7.2-ci
 ```
 
+## Building the images
+
+Just run the `build.sh` script.  It needs to have the [buildx](https://github.com/docker/buildx) docker feature enabled if you don't already have it.
+
+The script will by default build images for each PHP version in the `VERSIONS` array defined in the script.  It uses buildx to do multiple architectures for each PHP version : 
+
+- linux/amd64
+- linux/arm64
+- linux/arm/v7
+
