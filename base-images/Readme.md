@@ -7,9 +7,9 @@ This is just a base Dockerfile used as the base for our CI and production images
 Eg:
 
 ```
-// for php7.2
+// for php7.2 + composer
 docker pull uogsoe/soe-php-apache:7.2
-// for php7.2 + pcov + composer + prestissimo
+// for php7.2 + composer + pcov
 docker pull uogsoe/soe-php-apache:7.2-ci
 ```
 
