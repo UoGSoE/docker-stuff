@@ -27,7 +27,9 @@ RUN apt-get update \
     && composer global require hirak/prestissimo \
     # set the system timezone
     && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
-    && echo $TZ > /etc/timezone
+    && echo $TZ > /etc/timezone \
+    && a2enmod headers \
+    && echo 'export HOSTNAME=`uname -n`' >> /etc/apache2/envvars
 
 COPY vhost.conf /etc/apache2/sites-available/000-default.conf
 COPY uploads.ini timezone.ini /usr/local/etc/php/conf.d/
