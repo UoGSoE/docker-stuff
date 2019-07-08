@@ -2,6 +2,7 @@ ARG PHP_VERSION
 
 FROM php:${PHP_VERSION}-apache as prod
 
+# our default timezone and langauge
 ENV TZ=Europe/London
 ENV LANG=en_GB.UTF-8
 
@@ -11,12 +12,18 @@ ENV LANG=en_GB.UTF-8
 #       RUN pecl install memcached-2.2.0 && docker-php-ext-enable memcached
 
 RUN apt-get update \
+    # install some OS packages we need
+    && apt-get install -y --no-install-recommends libfreetype6-dev libjpeg62-turbo-dev libpng-dev libgmp-dev libldap2-dev netcat curl sqlite3 libsqlite3-dev libzip-dev unzip \
     # install php extensions
-    && apt-get install -y --no-install-recommends libfreetype6-dev libjpeg62-turbo-dev libpng-dev libgmp-dev libldap2-dev netcat sqlite3 libsqlite3-dev libzip-dev unzip \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install gd pdo pdo_mysql pdo_sqlite zip gmp bcmath pcntl ldap sysvmsg exif \
-    && a2enmod rewrite \
+    # clear the apt cache
     && rm -rf /var/lib/apt/lists/* \
+    # enable apache mod_rewrite for 'pretty' urls and mod_headers so we can add the container id
+    && a2enmod rewrite \
+    && a2enmod headers \
+    # give apache access to the system hostname (ie, the container-id)
+    && echo 'export HOSTNAME=`uname -n`' >> /etc/apache2/envvars \
     # install composer
     && curl -o /tmp/composer-setup.php https://getcomposer.org/installer \
     && curl -o /tmp/composer-setup.sig https://composer.github.io/installer.sig \
@@ -27,13 +34,13 @@ RUN apt-get update \
     && composer global require hirak/prestissimo \
     # set the system timezone
     && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
-    && echo $TZ > /etc/timezone \
-    && a2enmod headers \
-    && echo 'export HOSTNAME=`uname -n`' >> /etc/apache2/envvars
+    && echo $TZ > /etc/timezone
 
+# copy in the generic vhost for our 'default' app setup
 COPY vhost.conf /etc/apache2/sites-available/000-default.conf
+# add in the basic php ini settings for uploading files and our timezone
 COPY uploads.ini timezone.ini /usr/local/etc/php/conf.d/
-
+# and expose apache to docker
 EXPOSE 80
 
 FROM prod as ci
