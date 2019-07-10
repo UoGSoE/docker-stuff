@@ -15,8 +15,8 @@ export TRAEFIK_BACKEND=bingo-web
 export TRAEFIK_HOSTNAME=bingo.yourdomain.com
 export DOTENV_NAME=bingo-dotenv-20190428
 
-# build the image and push to a local registry
-docker build --build-arg=PHP_VERSION=${PHP_VERSION} -t ${IMAGE_NAME} .
+# build the image and push to a local registry (with the 'production' target - there is a 'ci' for testing/qa too)
+docker build --build-arg=PHP_VERSION=${PHP_VERSION} --target=prod -t ${IMAGE_NAME} .
 docker push ${IMAGE_NAME}
 
 # create a docker secret from a file called docker.env - this should be your normal production laravel app '.env' stuff
@@ -24,11 +24,9 @@ docker secret create ${DOTENV_NAME} docker.env
 
 # and deploy
 docker stack deploy -c prod-stack.yml bingo
-# or for qa
-docker stack deploy -c qa-stack.yml bingo
 ```
 
-The 'qa' stack is more like the provided `docker-compose` setup in that it will spin-up a stand-alone mysql/redis/maihog for the app.
+There is a 'qa-stack.yml' which is more like the provided `docker-compose` setup in that it will spin-up a stand-alone mysql/redis/maihog for the app.
 
 There is a `docker-compose.yml` file that you can use for QA/testing/debugging.  it will use a local `.env.qa` file as the laravel .env inside the containers.  You also need to set a couple of environment variables as above before starting it, specifically the `IMAGE_NAME`, `TRAEFIK_BACKEND` and `TRAEFIK_HOSTNAME` need to be set.  It still assumes you have `traefik` running as below.
 
