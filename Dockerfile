@@ -21,6 +21,38 @@ RUN npm install && \
     npm run production && \
     npm cache clean --force
 
+### Prod php dependencies
+FROM uogsoe/soe-php-apache:${PHP_VERSION} as prod-composer
+ENV APP_ENV=production
+ENV APP_DEBUG=0
+
+WORKDIR /var/www/html
+
+USER nobody
+
+#- make paths that the laravel composer.json expects to exist
+RUN mkdir -p database/seeds database/factories
+
+COPY composer*.json .
+
+RUN composer install \
+    --no-interaction \
+    --no-plugins \
+    --no-scripts \
+    --no-dev \
+    --prefer-dist
+
+### QA php dependencies
+FROM prod-composer as qa-composer
+ENV APP_ENV=local
+ENV APP_DEBUG=1
+
+RUN composer install \
+    --no-interaction \
+    --no-plugins \
+    --no-scripts \
+    --prefer-dist
+
 ### And build the prod app
 FROM uogsoe/soe-php-apache:${PHP_VERSION} as prod
 
@@ -35,26 +67,20 @@ COPY docker/custom_php.ini /usr/local/etc/php/conf.d/custom_php.ini
 COPY docker/app-start docker/app-healthcheck /usr/local/bin/
 RUN chmod u+x /usr/local/bin/app-start /usr/local/bin/app-healthcheck
 
+#- Copy in our prod php dep's
+COPY --from=prod-composer /var/www/html/vendor /var/www/html/vendor
+
+#- Copy in our front-end assets
+RUN mkdir -p /var/www/html/public/js /var/www/html/public/css
+COPY --from=frontend /home/node/public/js /var/www/html/public/js
+COPY --from=frontend /home/node/public/css /var/www/html/public/css
+COPY --from=frontend /home/node/mix-manifest.json /var/www/html/mix-manifest.json
+
 #- Copy in our code
 COPY . /var/www/html
 
 #- Symlink the docker secret to the local .env so Laravel can see it
 RUN ln -sf /run/secrets/.env /var/www/html/.env
-
-#- install our php dep's
-USER nobody
-RUN composer install \
-    --no-interaction \
-    --no-plugins \
-    --no-scripts \
-    --no-dev \
-    --prefer-dist
-USER root
-
-#- Copy in our front-end assets
-COPY --from=frontend /home/node/public/js /var/www/html/public/js
-COPY --from=frontend /home/node/public/css /var/www/html/public/css
-COPY --from=frontend /home/node/mix-manifest.json /var/www/html/mix-manifest.json
 
 #- Clean up and production-cache our apps settings/views/routing
 RUN rm -fr /var/www/html/bootstrap/cache/*.php && \
@@ -75,14 +101,8 @@ FROM prod as ci
 ENV APP_ENV=local
 ENV APP_DEBUG=1
 
-#- Install our remaining dev dependencies
-USER nobody
-RUN composer install \
-    --no-interaction \
-    --no-plugins \
-    --no-scripts \
-    --prefer-dist
-USER root
+#- Copy in our QA php dep's
+COPY --from=qa-composer /var/www/html/vendor /var/www/html/vendor
 
 #- Install sensiolabs security scanner and clear the caches
 RUN curl -o /usr/local/bin/security-checker https://get.sensiolabs.org/security-checker.phar && \
