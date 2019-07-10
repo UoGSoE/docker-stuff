@@ -15,6 +15,9 @@ export TRAEFIK_BACKEND=bingo-web
 export TRAEFIK_HOSTNAME=bingo.yourdomain.com
 export DOTENV_NAME=bingo-dotenv-20190428
 
+# enable docker buildkit
+export DOCKER_BUILDKIT=1
+
 # build the image and push to a local registry (with the 'production' target - there is a 'ci' for testing/qa too)
 docker build --build-arg=PHP_VERSION=${PHP_VERSION} --target=prod -t ${IMAGE_NAME} .
 docker push ${IMAGE_NAME}
