@@ -1,15 +1,14 @@
-version: "2.4"
+version: "3.7"
 
 # See https://github.com/UoGSoE/docker-stuff for the origins of this file
 
 services:
   app:
     image: ${IMAGE_NAME}
-    logging: *default-logging
     environment:
       CONTAINER_ROLE: app
     ports:
-      - "${APP_PORT:3000}:80"
+      - "${APP_PORT:-3000}:80"
     build:
       context: .
     secrets:
@@ -67,6 +66,8 @@ services:
 
   mailhog:
     image: mailhog/mailhog
+    ports:
+      - "3025:8025"
 
 volumes:
   redis:

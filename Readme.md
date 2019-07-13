@@ -31,16 +31,15 @@ docker stack deploy -c prod-stack.yml bingo
 
 There is a 'qa-stack.yml' which is more like the provided `docker-compose` setup in that it will spin-up a stand-alone mysql/redis/maihog for the app.
 
-There is a `docker-compose.yml` file that you can use for QA/testing/debugging.  it will use a local `.env.qa` file as the laravel .env inside the containers.  You also need to set a couple of environment variables as above before starting it, specifically the `IMAGE_NAME`, `TRAEFIK_BACKEND` and `TRAEFIK_HOSTNAME` need to be set.  It still assumes you have `traefik` running as below.
+There is a `docker-compose.yml` file that you can use for dev/demo-ing.  It will use a local `.env.qa` file as the laravel .env inside the containers.  You also need to set a couple of environment variables as above before starting it, specifically the `IMAGE_NAME`, and `APP_PORT` (the port the app will be available on - defaults to 3000).
 
-The 'compose' version will run the app, and also a local copy of mysql and redis.  It will also spin up a copy of [Mailhog](https://github.com/mailhog/MailHog) to trap outgoing mail and make it available at `mail-${TRAEFIK_HOSTNAME}`.
+The 'compose' version will run the app, and also a local copy of mysql and redis.  It will also spin up a copy of [Mailhog](https://github.com/mailhog/MailHog) to trap outgoing mail and make it available at http://localhost:3025.
 
 ```
 # example for docker-compose
 export PHP_VERSION=7.3  # only needed if you are building the image as part of this
 export IMAGE_NAME=bingo:1.2.7
-export TRAEFIK_BACKEND=bingo-qa
-export TRAEFIK_HOSTNAME=bingo-qa.192.168.1.84.xip.io
+export APP_PORT=3002
 
 docker-compose up --build
 ```

@@ -36,7 +36,7 @@ USER nobody
 #- make paths that the laravel composer.json expects to exist
 RUN mkdir -p database/seeds database/factories
 
-COPY composer.* .
+COPY composer.* ./
 
 RUN composer install \
     --no-interaction \
