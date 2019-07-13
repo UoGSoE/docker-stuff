@@ -1,13 +1,6 @@
-version: "3.7"
+version: "2.4"
 
 # See https://github.com/UoGSoE/docker-stuff for the origins of this file
-
-x-logging:
-  &default-logging
-  options:
-    max-size: '12m'
-    max-file: '5'
-  driver: json-file
 
 services:
   app:
@@ -15,6 +8,8 @@ services:
     logging: *default-logging
     environment:
       CONTAINER_ROLE: app
+    ports:
+      - "${APP_PORT:3000}:80"
     build:
       context: .
     secrets:
@@ -24,86 +19,44 @@ services:
       - redis
       - mysql
       - mailhog
-    networks:
-      - proxy
-      - private
-    deploy:
-      replicas: 1
-      labels:
-        - "traefik.backend=${TRAEFIK_BACKEND}"
-        - "traefik.docker.network=proxy"
-        - "traefik.frontend.rule=Host:${TRAEFIK_HOSTNAME}"
-        - "traefik.enable=true"
-        - "traefik.port=80"
-        - "traefik.default.protocol=http"
 
   scheduler:
     image: ${IMAGE_NAME}
-    logging: *default-logging
     environment:
       CONTAINER_ROLE: scheduler
     depends_on:
       - app
-    deploy:
-      labels:
-        - "traefik.enable=false"
-    networks:
-      - private
     secrets:
       - source: dotenv
         target: .env
 
   queue:
     image: ${IMAGE_NAME}
-    logging: *default-logging
     environment:
       CONTAINER_ROLE: queue
     depends_on:
       - app
-    deploy:
-      replicas: 1
-      labels:
-        - "traefik.enable=false"
-    networks:
-      - private
     secrets:
       - source: dotenv
         target: .env
 
   migrations:
     image: ${IMAGE_NAME}
-    logging: *default-logging
-    networks:
-      - private
     environment:
       CONTAINER_ROLE: migrations
     depends_on:
       - app
-    deploy:
-      replicas: 1
-      labels:
-        - "traefik.enable=false"
     secrets:
       - source: dotenv
         target: .env
 
   redis:
     image: redis:5.0.4
-    deploy:
-      labels:
-        - "traefik.enable=false"
-    networks:
-      - private
     volumes:
       - redis:/data
 
   mysql:
     image: mysql:5.7
-    deploy:
-      labels:
-        - "traefik.enable=false"
-    networks:
-      - private
     volumes:
       - mysql:/var/lib/mysql
     environment:
@@ -114,28 +67,12 @@ services:
 
   mailhog:
     image: mailhog/mailhog
-    deploy:
-      labels:
-        - "traefik.backend=${TRAEFIK_BACKEND}-mailhog"
-        - "traefik.docker.network=proxy"
-        - "traefik.frontend.rule=Host:mail-${TRAEFIK_HOSTNAME}"
-        - "traefik.enable=true"
-        - "traefik.port=8025"
-        - "traefik.default.protocol=http"
-    networks:
-      - proxy
-      - private
 
 volumes:
   redis:
     driver: "local"
   mysql:
     driver: "local"
-
-networks:
-  private:
-  proxy:
-    external: true
 
 secrets:
   dotenv:
