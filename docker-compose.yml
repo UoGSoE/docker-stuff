@@ -27,8 +27,6 @@ services:
     networks:
       - proxy
       - private
-    expose:
-      - "80"
     deploy:
       replicas: 1
       labels:
@@ -124,8 +122,6 @@ services:
         - "traefik.enable=true"
         - "traefik.port=8025"
         - "traefik.default.protocol=http"
-    expose:
-      - "8025"
     networks:
       - proxy
       - private
