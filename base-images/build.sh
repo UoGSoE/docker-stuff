@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Note: you need the 'buildx' feature of docker enabled to run this so we can 
+# build images for x86, arm etc. eg :
+# $ docker buildx create --name mybuilder
+# $ docker buildx use mybuilder
+# $ docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t myimage:latest .
+#
 
 BASE_NAME="uogsoe/soe-php-apache"
 VERSIONS=( "7.1" "7.2" "7.3" )

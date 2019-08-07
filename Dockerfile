@@ -82,6 +82,9 @@ COPY --from=frontend /home/node/mix-manifest.json /var/www/html/mix-manifest.jso
 #- Copy in our code
 COPY . /var/www/html
 
+#- Force horizon to rebuild it's public assets
+RUN php /var/www/html/artisan horizon:assets
+
 #- Symlink the docker secret to the local .env so Laravel can see it
 RUN ln -sf /run/secrets/.env /var/www/html/.env
 
@@ -109,6 +112,7 @@ COPY --from=qa-composer /var/www/html/vendor /var/www/html/vendor
 
 #- Install sensiolabs security scanner and clear the caches
 RUN curl -o /usr/local/bin/security-checker https://get.sensiolabs.org/security-checker.phar && \
+    curl -OL -o /usr/local/bin/phpcs https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar && \
     php /var/www/html/artisan view:clear && \
     php /var/www/html/artisan cache:clear
 

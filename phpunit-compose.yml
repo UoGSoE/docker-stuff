@@ -1,0 +1,30 @@
+version: "2.4"
+
+# See https://github.com/UoGSoE/docker-stuff for the origins of this file
+
+services:
+  phpunit:
+    build:
+      context: .
+      dockerfile: phpunit.Dockerfile
+      args:
+        PHP_VERSION: 7.3
+    depends_on:
+      - mysql
+    environment:
+     DB_CONNECTION: mysql
+     DB_HOST: mysql
+     DB_DATABASE: homestead
+     DB_USERNAME: homestead
+     DB_PASSWORD: secret
+    volumes:
+      - .:/var/www/html:delegated
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: homestead
+      MYSQL_USER: homestead
+      MYSQL_PASSWORD: secret
+
