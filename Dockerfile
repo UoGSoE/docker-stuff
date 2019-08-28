@@ -4,15 +4,13 @@ ARG PHP_VERSION=7.2
 ### Build JS/css assets
 FROM node:10 as frontend
 
+# workaround for mix.version() webpack bug
+RUN ln -s /home/node/public /public
+
 USER node
 WORKDIR /home/node
 
 RUN mkdir -p /home/node/public/css /home/node/public/js /home/node/resources
-
-USER root
-# workaround for mix.version() webpack bug
-RUN ln -s /home/node/public /public
-USER node
 
 COPY --chown=node:node package*.json webpack.mix.js .babelrc* /home/node/
 COPY --chown=node:node resources/js* /home/node/resources/js
@@ -82,18 +80,18 @@ COPY --from=frontend /home/node/mix-manifest.json /var/www/html/mix-manifest.jso
 #- Copy in our code
 COPY . /var/www/html
 
-#- Force horizon to rebuild it's public assets
-RUN php /var/www/html/artisan horizon:assets
+#- If horizon is installed force it to rebuild it's public assets
+RUN if grep -q horizon composer.json; then php /var/www/html/artisan horizon:assets; fi
 
 #- Symlink the docker secret to the local .env so Laravel can see it
 RUN ln -sf /run/secrets/.env /var/www/html/.env
 
 #- Clean up and production-cache our apps settings/views/routing
 RUN rm -fr /var/www/html/bootstrap/cache/*.php && \
-    chown -R www-data:www-data storage bootstrap/cache && \
     php /var/www/html/artisan storage:link && \
     php /var/www/html/artisan view:cache && \
-    php /var/www/html/artisan route:cache
+    php /var/www/html/artisan route:cache && \
+    chown -R www-data:www-data storage bootstrap/cache
 
 #- Set up the default healthcheck
 HEALTHCHECK --start-period=30s CMD /usr/local/bin/app-healthcheck
