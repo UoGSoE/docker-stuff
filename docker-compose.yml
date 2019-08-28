@@ -77,4 +77,4 @@ volumes:
 
 secrets:
   dotenv:
-    file: ./.env.qa
+    file: ./.env
