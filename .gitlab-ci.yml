@@ -19,8 +19,7 @@ stages:
   - build-qa
   - test
   - build-prod
-  - deploy-qa
-  - deploy-prod
+  - deploy
 
 variables:
   QA_IMAGE_NAME: $CI_REGISTRY/$CI_PROJECT_PATH:qa-$CI_COMMIT_SHA
@@ -86,7 +85,7 @@ build-prod-tagged:
   - docker push $PROD_IMAGE_NAME
 
 deploy_to_qa:
-  stage: deploy-qa
+  stage: deploy
   when: manual
   environment: qa
   image: docker:stable
@@ -108,8 +107,10 @@ deploy_to_qa:
   - docker -H ssh://deployer@${QA_SERVER} stack deploy -c qa-stack.yml ${STACK_NAME}
 
 deploy_to_prod:
-  stage: deploy-prod
+  stage: deploy
   when: manual
+  only:
+  - master
   environment: prod
   image: docker:stable
   script:
