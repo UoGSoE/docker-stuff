@@ -1,6 +1,15 @@
 ### PHP version we are targetting
 ARG PHP_VERSION=7.2
 
+
+### Placeholder for basic dev stage for use with docker-compose
+FROM uogsoe/soe-php-apache:${PHP_VERSION} as dev
+
+COPY docker/app-start docker/app-healthcheck /usr/local/bin/
+RUN chmod u+x /usr/local/bin/app-start /usr/local/bin/app-healthcheck
+CMD ["/usr/local/bin/app-start"]
+
+
 ### Build JS/css assets
 FROM node:10 as frontend
 
@@ -21,6 +30,7 @@ COPY --chown=node:node resources/css* /home/node/resources/css
 RUN npm install && \
     npm run production && \
     npm cache clean --force
+
 
 ### Prod php dependencies
 FROM uogsoe/soe-php-apache:${PHP_VERSION} as prod-composer
@@ -43,6 +53,7 @@ RUN composer install \
     --no-dev \
     --prefer-dist
 
+
 ### QA php dependencies
 FROM prod-composer as qa-composer
 ENV APP_ENV=local
@@ -54,8 +65,9 @@ RUN composer install \
     --no-scripts \
     --prefer-dist
 
+
 ### And build the prod app
-FROM uogsoe/soe-php-apache:${PHP_VERSION} as prod
+FROM dev as prod
 
 WORKDIR /var/www/html
 
@@ -65,8 +77,6 @@ ENV APP_DEBUG=0
 #- Copy our start scripts and php/ldap configs in
 COPY docker/ldap.conf /etc/ldap/ldap.conf
 COPY docker/custom_php.ini /usr/local/etc/php/conf.d/custom_php.ini
-COPY docker/app-start docker/app-healthcheck /usr/local/bin/
-RUN chmod u+x /usr/local/bin/app-start /usr/local/bin/app-healthcheck
 
 #- Copy in our prod php dep's
 COPY --from=prod-composer /var/www/html/vendor /var/www/html/vendor
@@ -98,6 +108,7 @@ HEALTHCHECK --start-period=30s CMD /usr/local/bin/app-healthcheck
 
 #- And off we go...
 CMD ["/usr/local/bin/app-start"]
+
 
 ### Build the ci version of the app (prod+dev packages)
 FROM prod as ci
