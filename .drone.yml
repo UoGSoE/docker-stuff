@@ -5,6 +5,12 @@ steps:
 - name: build
   image: docker
   commands:
-  - apk --no-cache add bash
+  - apk --no-cache add bash curl
+  - mkdir .docker
+  - mkdir .docker/cli-plugins
+  - curl -o .docker/cli-plugins/docker-buildx https://github.com/docker/buildx/releases/download/v0.3.0/buildx-v0.3.0.linux-amd64
+  - chmod +x .docker/cli-plugins/docker-buildx
+  - docker buildx create --name mybuilder
+  - docker buildx use mybuilder
   - ./base-images/build.sh
 
