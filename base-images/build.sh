@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Note: you need the 'buildx' feature of docker enabled to run this so we can 
 # build images for x86, arm etc. eg :
