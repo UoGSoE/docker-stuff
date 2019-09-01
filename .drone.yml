@@ -5,6 +5,5 @@ steps:
 - name: build
   image: docker
   commands:
-  - cd base-images 
-  - ./build.sh
+  - ./base-images/build.sh
 

@@ -4,9 +4,11 @@
 # build images for x86, arm etc. eg :
 # $ docker buildx create --name mybuilder
 # $ docker buildx use mybuilder
-# $ docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t myimage:latest .
+# $ docker buildx build --build-arg PHP_VERSION=7.3 --platform linux/amd64,linux/arm64,linux/arm/v7 -t myimage:latest .
 #
 
+ABSOLUTE_PATH=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+DOCKER_FILE="${ABSOLUTE_PATH}/Dockerfile.base"
 BASE_NAME="uogsoe/soe-php-apache"
 VERSIONS=( "7.1" "7.2" "7.3" )
 CMD="docker buildx build --pull --push --no-cache --platform linux/amd64,linux/arm/v7" 
