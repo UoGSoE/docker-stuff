@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Note: you need the 'buildx' feature of docker enabled to run this so we can 
 # build images for x86, arm etc. eg :
@@ -31,9 +31,9 @@ echo "Logging to ${LOGFILE}"
 for VERSION in "${VERSIONS[@]}";
 do
     echo "Building ${VERSION}..."
-    $CMD --target=prod --build-arg PHP_VERSION=${VERSION} -t "${BASE_NAME}":"${VERSION}" -f Dockerfile.base . >> "${LOGFILE}"
+    $CMD --target=prod --build-arg PHP_VERSION=${VERSION} -t "${BASE_NAME}":"${VERSION}" -f ${DOCKER_FILE} ${ABSOLUTE_PATH} >> "${LOGFILE}"
 
     echo "Building ${VERSION}-ci..."
-    ${CMD} --target=ci --build-arg PHP_VERSION=${VERSION} -t "${BASE_NAME}":"${VERSION}"-ci -f Dockerfile.base . >> "${LOGFILE}"
+    ${CMD} --target=ci --build-arg PHP_VERSION=${VERSION} -t "${BASE_NAME}":"${VERSION}"-ci -f ${DOCKER_FILE} ${ABSOLUTE_PATH} >> "${LOGFILE}"
 done
 
