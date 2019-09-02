@@ -17,6 +17,8 @@ RUN apt-get update \
     # install php extensions
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install gd pdo pdo_mysql pdo_sqlite zip gmp bcmath pcntl ldap sysvmsg exif \
+    # install the redis php extension
+    && pecl install redis \
     # clear the apt cache
     && rm -rf /var/lib/apt/lists/* \
     # enable apache mod_rewrite for 'pretty' urls and mod_headers so we can add the container id
@@ -46,8 +48,22 @@ FROM prod as ci
 # Joe Watkins.  It provides code-coverage statistics without slowing down code.
 # https://github.com/krakjoe/pcov
 ENV DRIVER pcov
-RUN pecl install pcov \
-    && docker-php-ext-enable pcov \
-    && echo "pcov.enabled = 1" > /usr/local/etc/php/conf.d/pcov.ini
+# pecl install currently commented out as no pre-built package for arm
+#RUN pecl install pcov \
+#    && docker-php-ext-enable pcov \
+#    && echo "pcov.enabled = 1" > /usr/local/etc/php/conf.d/pcov.ini
+WORKDIR /tmp
+RUN apt-get update \
+    && apt-get -y --no-install-recommends install git \
+    && git clone https://github.com/krakjoe/pcov.git \
+    && cd pcov \
+    && phpize \
+    && ./configure --enable-pcov \
+    && make \
+    && make test \
+    && make install \
+    && cd .. \
+    && rm -fr pcov \
+    && apt-get -y remove git
 
 
