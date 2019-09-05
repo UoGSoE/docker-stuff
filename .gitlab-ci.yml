@@ -1,6 +1,7 @@
 #
 # Variables which should be set in the gitlab project or group :
 #
+# PHP_VERSION (eg '7.2')
 # STACK_NAME (eg, 'amazingapp' - as in 'docker stack deploy $STACK_NAME')
 # TRAEFIK_BACKEND (eg 'amazingapp-web' - label for traefik dashboard)
 # TRAEFIK_QA_HOSTNAME (eg, amazing.qa-domain.ac.uk - hostname your app will be available on)

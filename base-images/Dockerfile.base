@@ -64,6 +64,8 @@ RUN apt-get update \
     && make install \
     && cd .. \
     && rm -fr pcov \
-    && apt-get -y remove git
+    && apt-get -y remove git \
+    && curl -o /usr/local/bin/phpcs -L https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar \
+    && chmod +x /usr/local/bin/phpcs
 
 
