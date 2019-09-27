@@ -6,6 +6,15 @@ x-logging:
     max-size: '12m'
     max-file: '5'
   driver: json-file
+x-deploy:
+  &default-deploy
+  replicas: 1
+  labels:
+    - "traefik.enable=false"
+  update_config:
+    parallelism: 1
+    failure_action: rollback
+    order: start-first
 
 services:
   app:
@@ -28,6 +37,10 @@ services:
     expose:
       - "80"
     deploy:
+      update_config:
+        parallelism: 1
+        failure_action: rollback
+        order: start-first
       replicas: 1
       labels:
         - "traefik.backend=${TRAEFIK_BACKEND}"
@@ -44,9 +57,7 @@ services:
       CONTAINER_ROLE: scheduler
     depends_on:
       - app
-    deploy:
-      labels:
-        - "traefik.enable=false"
+    deploy: *default-deploy
     networks:
       - private
     secrets:
@@ -56,6 +67,7 @@ services:
   queue:
     image: ${IMAGE_NAME}
     logging: *default-logging
+    deploy: *default-deploy
     stop_grace_period: 30s
     environment:
       CONTAINER_ROLE: queue
@@ -74,6 +86,7 @@ services:
   migrations:
     image: ${IMAGE_NAME}
     logging: *default-logging
+    deploy: *default-deploy
     networks:
       - private
     environment:
@@ -90,9 +103,7 @@ services:
 
   redis:
     image: redis:5.0.5
-    deploy:
-      labels:
-        - "traefik.enable=false"
+    deploy: *default-deploy
     networks:
       - private
     volumes:
@@ -100,9 +111,7 @@ services:
 
   mysql:
     image: mysql:5.7
-    deploy:
-      labels:
-        - "traefik.enable=false"
+    deploy: *default-deploy
     networks:
       - private
     volumes:
