@@ -16,9 +16,10 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends libfreetype6-dev libjpeg62-turbo-dev libpng-dev libgmp-dev libldap2-dev netcat curl sqlite3 libsqlite3-dev libzip-dev unzip vim-tiny \
     # install php extensions
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install gd pdo pdo_mysql pdo_sqlite zip gmp bcmath pcntl ldap sysvmsg exif \
+    && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql pdo_sqlite zip gmp bcmath pcntl ldap sysvmsg exif \
     # install the redis php extension
-    && pecl install redis \
+    && pecl install redis-5.0.2 \
+    && docker-php-ext-enable redis \
     # clear the apt cache
     && rm -rf /var/lib/apt/lists/* \
     # enable apache mod_rewrite for 'pretty' urls and mod_headers so we can add the container id
@@ -45,8 +46,8 @@ EXPOSE 80
 
 FROM prod as ci
 # The only additions for CI/QA is the 'pcov' extension by PHP internals developer
-# Joe Watkins.  It provides code-coverage statistics without slowing down code.
-# https://github.com/krakjoe/pcov
+# Joe Watkins (it provides code-coverage statistics without slowing down code.
+# https://github.com/krakjoe/pcov)
 ENV DRIVER pcov
 # pecl install currently commented out as no pre-built package for arm
 #RUN pecl install pcov \
@@ -64,8 +65,6 @@ RUN apt-get update \
     && make install \
     && cd .. \
     && rm -fr pcov \
-    && apt-get -y remove git \
-    && curl -o /usr/local/bin/phpcs -L https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar \
-    && chmod +x /usr/local/bin/phpcs
+    && apt-get -y remove git
 
 
