@@ -42,7 +42,9 @@ WORKDIR /var/www/html
 USER nobody
 
 #- make paths that the laravel composer.json expects to exist
-RUN mkdir -p database/seeds database/factories
+RUN mkdir -p database
+#- copy the seeds and factories so that composer generates autoload entries for them
+COPY database/seeds database/factories database/
 
 COPY composer.* ./
 
@@ -52,7 +54,6 @@ RUN composer install \
     --no-scripts \
     --no-dev \
     --prefer-dist
-
 
 ### QA php dependencies
 FROM prod-composer as qa-composer
@@ -64,7 +65,6 @@ RUN composer install \
     --no-plugins \
     --no-scripts \
     --prefer-dist
-
 
 ### And build the prod app
 FROM dev as prod
