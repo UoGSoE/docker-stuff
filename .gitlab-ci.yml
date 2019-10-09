@@ -64,6 +64,7 @@ test:
   - php artisan migrate:fresh
   - cat .env
   - php vendor/bin/phpunit --colors=never --testdox
+  - egrep -r '[^a-zA-Z](dd\(|dump\()' app && exit 1
   - if [[ -f /usr/local/bin/security-checker ]]; then php /usr/local/bin/security-checker security:check ./composer.lock ; fi
   - if [[ -f /usr/local/bin/phpcs ]]; then php /usr/local/bin/phpcs --config-set ignore_warnings_on_exit 1 ; php /usr/local/bin/phpcs --standard=PSR2 app ; fi
 
