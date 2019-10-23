@@ -6,6 +6,23 @@ x-logging:
     max-size: '12m'
     max-file: '5'
   driver: json-file
+x-deploy-php:
+  &default-php-deploy
+  replicas: 1
+  labels:
+    - "traefik.enable=false"
+  placement:
+    constraints:
+      - node.role == worker
+  resources:
+    limits:
+      memory: 2048M
+    reservations:
+      memory: 128M
+  update_config:
+    parallelism: 1
+    failure_action: rollback
+    order: start-first
 x-deploy:
   &default-deploy
   replicas: 1
@@ -14,6 +31,9 @@ x-deploy:
   placement:
     constraints:
       - node.role == worker
+  resources:
+    limits:
+      memory: 2048M
   update_config:
     parallelism: 1
     failure_action: rollback
@@ -44,6 +64,11 @@ services:
         parallelism: 1
         failure_action: rollback
         order: start-first
+      resources:
+        limits:
+          memory: 2048M
+        reservations:
+          memory: 128M
       labels:
         - "traefik.backend=${TRAEFIK_BACKEND}"
         - "traefik.docker.network=proxy"
@@ -56,7 +81,7 @@ services:
 
   scheduler:
     image: ${IMAGE_NAME}
-    deploy: *default-deploy
+    deploy: *default-php-deploy
     stop_grace_period: 5m
     networks:
       - mysql
@@ -70,7 +95,7 @@ services:
 
   queue:
     image: ${IMAGE_NAME}
-    deploy: *default-deploy
+    deploy: *default-php-deploy
     stop_grace_period: 5m
     networks:
       - mysql
@@ -84,7 +109,7 @@ services:
 
   migrations:
     image: ${IMAGE_NAME}
-    deploy: *default-deploy
+    deploy: *default-php-deploy
     stop_grace_period: 5m
     networks:
       - mysql
