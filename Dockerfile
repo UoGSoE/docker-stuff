@@ -44,7 +44,9 @@ USER nobody
 #- make paths that the laravel composer.json expects to exist
 RUN mkdir -p database
 #- copy the seeds and factories so that composer generates autoload entries for them
-COPY database/seeds database/factories database/
+COPY database/seeds database/seeds
+COPY database/factories database/factories
+
 
 COPY composer.* ./
 
