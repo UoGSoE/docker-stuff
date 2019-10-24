@@ -31,7 +31,7 @@ docker stack deploy -c prod-stack.yml bingo
 
 There is a 'qa-stack.yml' which is more like the provided `docker-compose` setup in that it will spin-up a stand-alone mysql/redis/maihog for the app.
 
-There is a `docker-compose.yml` file that you can use for dev/demo-ing.  It will use a local `.env.qa` file as the laravel .env inside the containers.  You also need to set a couple of environment variables as above before starting it, specifically the `IMAGE_NAME`, and `APP_PORT` (the port the app will be available on - defaults to 3000).
+There is a `docker-compose.yml` file that you can use for dev/demo-ing.  It will use a local `.env` file as the laravel .env inside the containers.  You also need to set a couple of environment variables as above before starting it, specifically the `IMAGE_NAME`, and `APP_PORT` (the port the app will be available on - defaults to 3000).
 
 The 'compose' version will run the app, and also a local copy of mysql and redis.  It will also spin up a copy of [Mailhog](https://github.com/mailhog/MailHog) to trap outgoing mail and make it available at http://localhost:3025.
 
