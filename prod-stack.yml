@@ -18,7 +18,7 @@ x-deploy-php:
     limits:
       memory: 2048M
     reservations:
-      memory: 128M
+      memory: 200M
   update_config:
     parallelism: 1
     failure_action: rollback
