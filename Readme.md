@@ -2,6 +2,7 @@
 
 This is the base repo for our docker/swarm app configs.  Generic as far as possible for our Laravel/PHP apps and used as the base on new projects.  Ideally they can be used 'as is' outside of special-case apps.
 
+
 ## If you're interested
 
 Each app gets a copy of the docker files (you can run `./copyto ../code/my-project` to copy them in).  The stack file
