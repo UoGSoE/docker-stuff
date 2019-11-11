@@ -6,4 +6,5 @@ Dockerfile
 stack.yml
 public/js
 public/css
+bootstrap/cache/*
 **/mix-manifest.json
