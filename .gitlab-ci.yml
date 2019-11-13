@@ -92,7 +92,7 @@ deploy_to_qa:
   environment: qa
   image: docker:stable
   script:
-  - apk add -qU openssh
+  - apk add -qU openssh curl
   - eval $(ssh-agent -s)
   - export IMAGE_NAME=$LOCAL_QA_IMAGE_NAME
   - export TRAEFIK_BACKEND=$TRAEFIK_BACKEND
@@ -107,6 +107,7 @@ deploy_to_qa:
   - echo "${QA_DOTENV}" | docker -H ssh://deployer@${QA_SERVER} secret create ${DOTENV_NAME} -
   - echo "Deploying stack ${STACK_NAME} image ${IMAGE_NAME} with secret ${DOTENV_NAME}"
   - docker -H ssh://deployer@${QA_SERVER} stack deploy -c qa-stack.yml ${STACK_NAME}
+  - curl -X POST -H 'Content-type:application/json' --data "{\"username\":\"gitlab\", \"text\":\"Deployed QA ${STACK_NAME}\", \"channel\":\"#deployments\", \"icon_emoji\":\":ghost:\"}" ${SLACK_WEBHOOK}
 
 deploy_to_prod:
   stage: deploy
@@ -116,7 +117,7 @@ deploy_to_prod:
   environment: prod
   image: docker:stable
   script:
-  - apk add -qU openssh
+  - apk add -qU openssh curl
   - eval $(ssh-agent -s)
   - export IMAGE_NAME=$LOCAL_PROD_IMAGE_NAME
   - export TRAEFIK_BACKEND=$TRAEFIK_BACKEND
@@ -131,3 +132,4 @@ deploy_to_prod:
   - echo "${PROD_DOTENV}" | docker -H ssh://deployer@${PROD_SERVER} secret create ${DOTENV_NAME} -
   - echo "Deploying stack ${STACK_NAME} image ${IMAGE_NAME} with secret ${DOTENV_NAME}"
   - docker -H ssh://deployer@${PROD_SERVER} stack deploy -c prod-stack.yml ${STACK_NAME}
+  - curl -X POST -H 'Content-type:application/json' --data "{\"username\":\"gitlab\", \"text\":\"Deployed Production ${STACK_NAME}\", \"channel\":\"#deployments\", \"icon_emoji\":\":ghost:\"}" ${SLACK_WEBHOOK}
