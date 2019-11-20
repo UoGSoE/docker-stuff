@@ -10,7 +10,9 @@
 ABSOLUTE_PATH=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 DOCKER_FILE="${ABSOLUTE_PATH}/Dockerfile.base"
 BASE_NAME="uogsoe/soe-php-apache"
+# Note: these should be in ascending order - the ':latest' tag is taken from the last element
 VERSIONS=( "7.1" "7.2" "7.3" )
+LATEST=${VERSIONS[@]: -1:1}
 #CMD="docker buildx build --pull --push --no-cache --platform linux/amd64,linux/arm/v7" 
 CMD="docker buildx build --pull --push --platform linux/amd64,linux/arm/v7" 
 PNAME=`basename $0`
@@ -38,3 +40,5 @@ do
     ${CMD} --target=ci --build-arg PHP_VERSION=${VERSION} -t "${BASE_NAME}":"${VERSION}"-ci -f ${DOCKER_FILE} ${ABSOLUTE_PATH} >> "${LOGFILE}"
 done
 
+echo "Tagging latest from ${LATEST}..."
+$CMD --target=prod --build-arg PHP_VERSION=${LATEST} -t "${BASE_NAME}":latest -f ${DOCKER_FILE} ${ABSOLUTE_PATH} >> "${LOGFILE}"
