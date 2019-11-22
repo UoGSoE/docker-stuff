@@ -25,13 +25,13 @@ if [ "$role" = "app" ]; then
 
 elif [ "$role" = "queue" ]; then
 
-    php /var/www/html/artisan horizon
+    nice php /var/www/html/artisan horizon
 
 elif [ "$role" = "scheduler" ]; then
 
     while [ true ]
     do
-      php /var/www/html/artisan schedule:run --verbose --no-interaction &
+      nice php /var/www/html/artisan schedule:run --verbose --no-interaction &
       sleep 60
     done
 
