@@ -15,6 +15,8 @@ x-deploy:
     parallelism: 1
     failure_action: rollback
     order: start-first
+  limits:
+    cpus: "1"
 
 services:
   app:
@@ -53,11 +55,11 @@ services:
   scheduler:
     image: ${IMAGE_NAME}
     logging: *default-logging
+    deploy: *default-deploy
     environment:
       CONTAINER_ROLE: scheduler
     depends_on:
       - app
-    deploy: *default-deploy
     networks:
       - private
     secrets:
@@ -67,18 +69,12 @@ services:
   queue:
     image: ${IMAGE_NAME}
     logging: *default-logging
+    deploy: *default-deploy
     stop_grace_period: 30s
     environment:
       CONTAINER_ROLE: queue
     depends_on:
       - app
-    deploy:
-      replicas: 1
-      labels:
-        - "traefik.enable=false"
-      resources:
-        limits:
-          cpus: "1"
     networks:
       - private
     secrets:
@@ -95,10 +91,6 @@ services:
       CONTAINER_ROLE: migrations
     depends_on:
       - app
-    deploy:
-      replicas: 1
-      labels:
-        - "traefik.enable=false"
     secrets:
       - source: dotenv
         target: .env
