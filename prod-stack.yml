@@ -17,6 +17,7 @@ x-deploy-php:
   resources:
     limits:
       memory: 2048M
+      cpus: "1"
     reservations:
       memory: 200M
   update_config:

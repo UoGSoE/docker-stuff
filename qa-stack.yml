@@ -67,7 +67,6 @@ services:
   queue:
     image: ${IMAGE_NAME}
     logging: *default-logging
-    deploy: *default-deploy
     stop_grace_period: 30s
     environment:
       CONTAINER_ROLE: queue
@@ -77,6 +76,9 @@ services:
       replicas: 1
       labels:
         - "traefik.enable=false"
+      resources:
+        limits:
+          cpus: "1"
     networks:
       - private
     secrets:
