@@ -45,6 +45,7 @@ services:
         order: start-first
       replicas: 1
       labels:
+        # note: this assumes traefik v1
         - "traefik.backend=${TRAEFIK_BACKEND}"
         - "traefik.docker.network=proxy"
         - "traefik.frontend.rule=Host:${TRAEFIK_HOSTNAME}"

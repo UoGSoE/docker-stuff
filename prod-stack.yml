@@ -70,6 +70,7 @@ services:
         reservations:
           memory: 128M
       labels:
+        # note: this assumes traefik v2
         - "traefik.enable=true"
         - "traefik.http.routers.${TRAEFIK_BACKEND}.rule=Host(`${TRAEFIK_HOSTNAME`)"
         - "traefik.http.routers.${TRAEFIK_BACKEND}.entrypoints=web"
