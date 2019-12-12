@@ -45,7 +45,6 @@ services:
     image: ${IMAGE_NAME}
     networks:
       - proxy
-      - mysql
       - default
     expose:
       - "80"
@@ -55,7 +54,7 @@ services:
       - source: dotenv
         target: .env
     deploy:
-      replicas: 3
+      replicas: 2
       placement:
         constraints:
           - node.role == worker
@@ -71,12 +70,13 @@ services:
         reservations:
           memory: 128M
       labels:
-        - "traefik.backend=${TRAEFIK_BACKEND}"
-        - "traefik.docker.network=proxy"
-        - "traefik.frontend.rule=Host:${TRAEFIK_HOSTNAME}"
         - "traefik.enable=true"
-        - "traefik.port=80"
-        - "traefik.default.protocol=http"
+        - "traefik.http.routers.${TRAEFIK_BACKEND}.rule=Host(`${TRAEFIK_HOSTNAME`)"
+        - "traefik.http.routers.${TRAEFIK_BACKEND}.entrypoints=web"
+        - "traefik.http.services.${TRAEFIK_BACKEND}.loadbalancer.server.port=80" # it seems you always need to give traefik a port so it 'notices' the service
+        - "traefik.http.routers.${TRAEFIK_BACKEND}-secured.rule=Host(`${TRAEFIK_HOSTNAME`)"
+        - "traefik.http.routers.${TRAEFIK_BACKEND}-secured.entrypoints=web-secured"
+        - "traefik.http.routers.${TRAEFIK_BACKEND}-secured.tls.certresolver=mytlschallenge"
     stop_grace_period: 2m
     logging: *default-logging
 
@@ -85,7 +85,6 @@ services:
     deploy: *default-php-deploy
     stop_grace_period: 5m
     networks:
-      - mysql
       - default
     environment:
       CONTAINER_ROLE: scheduler
@@ -99,7 +98,6 @@ services:
     deploy: *default-php-deploy
     stop_grace_period: 5m
     networks:
-      - mysql
       - default
     environment:
       CONTAINER_ROLE: queue
@@ -113,7 +111,6 @@ services:
     deploy: *default-php-deploy
     stop_grace_period: 5m
     networks:
-      - mysql
       - default
     environment:
       CONTAINER_ROLE: migrations
@@ -140,6 +137,4 @@ secrets:
 networks:
   default:
   proxy:
-    external: true
-  mysql:
     external: true
