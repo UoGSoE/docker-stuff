@@ -129,6 +129,8 @@ services:
     logging: *default-logging
     networks:
       - default
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
 
 secrets:
   dotenv:
