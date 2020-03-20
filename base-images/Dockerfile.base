@@ -4,6 +4,12 @@ FROM php:${PHP_VERSION}-apache as prod
 
 ARG PHP_VERSION
 
+LABEL org.opencontainers.image.source=https://github.com/UoGSoE/docker-stuff/ \
+      org.opencontainers.image.vendor="University of Glasgow, School of Engineering" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.title="PHP ${PHP_VERSION} + Apache" \
+      org.opencontainers.image.description="PHP ${PHP_VERSION} with Apache and a set of php/os packages suitable for running Laravel apps"
+
 # our default timezone and langauge
 ENV TZ=Europe/London
 ENV LANG=en_GB.UTF-8
