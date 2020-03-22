@@ -101,9 +101,6 @@ RUN if grep -q horizon composer.json; then php /var/www/html/artisan horizon:ass
 #- Symlink the docker secret to the local .env so Laravel can see it
 RUN ln -sf /run/secrets/.env /var/www/html/.env
 
-#- Symlink laravel's default log path to stdout - in case log stack driver not set properly
-RUN ln -sf /dev/stdout /var/www/html/storage/logs/laravel.log
-
 #- Clean up and production-cache our apps settings/views/routing
 RUN php /var/www/html/artisan storage:link && \
     php /var/www/html/artisan view:cache && \
