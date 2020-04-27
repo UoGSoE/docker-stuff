@@ -75,36 +75,6 @@ php-security-scan:
   script:
     - if [[ -f /usr/local/bin/security-checker ]]; then php /usr/local/bin/security-checker security:check ./composer.lock ; fi
 
-os-security-scan:
-  stage: test
-  image: docker:stable
-  services:
-    - name: docker:dind
-      entrypoint: ["env", "-u", "DOCKER_HOST"]
-      command: ["dockerd-entrypoint.sh"]
-  variables:
-    DOCKER_HOST: tcp://docker:2375/
-    DOCKER_DRIVER: overlay2
-    # See https://github.com/docker-library/docker/pull/166
-    DOCKER_TLS_CERTDIR: ""
-  before_script:
-    - apk add --no-cache curl
-    - export VERSION=$(curl --silent "https://api.github.com/repos/aquasecurity/trivy/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
-    - echo $VERSION
-    - wget https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_Linux-64bit.tar.gz
-    - tar zxvf trivy_${VERSION}_Linux-64bit.tar.gz
-  allow_failure: true
-  script:
-    # Build report
-    - ./trivy --exit-code 0 --cache-dir .trivycache/ --no-progress --format template --template "@contrib/gitlab.tpl" -o gl-container-scanning-report.json $QA_IMAGE_NAME
-    # Print report
-    - ./trivy --exit-code 0 --cache-dir .trivycache/ --no-progress --severity HIGH $QA_IMAGE_NAME
-    # Fail on high and critical vulnerabilities
-    - ./trivy --exit-code 1 --cache-dir .trivycache/ --severity CRITICAL --no-progress $QA_IMAGE_NAME
-  cache:
-    paths:
-      - .trivycache/
-
 build-qa-tagged:
   stage: build-qa
   image: docker:stable
