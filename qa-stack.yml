@@ -135,6 +135,28 @@ services:
       - proxy
       - private
 
+  minio:
+    image: minio/minio:RELEASE.2019-10-12T01-39-57Z
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        failure_action: rollback
+        order: start-first
+    entrypoint: sh
+    command: -c 'mkdir -p /data/jwnc && /usr/bin/minio server /data'
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_PROD_KEY}
+      MINIO_SECRET_KEY: ${MINIO_PROD_SECRET}
+      MINIO_REGION: "us-east-1"
+      MINIO_BUCKET: "jwnc"
+      MINIO_ENDPOINT: "${MINIO_PROD_ENDPOINT}"
+    networks:
+      - default
+      - proxy
+    volumes:
+      - minio:/data
+
 volumes:
   redis:
     driver: "local"
