@@ -33,6 +33,7 @@ RUN apt-get update \
     && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql pdo_sqlite zip gmp bcmath pcntl ldap sysvmsg exif \
     # install the redis php extension
     && pickle install redis-${PHP_REDIS_VERSION} \
+    && echo "extension=redis.so" > /usr/local/etc/php/conf.d/redis.ini \
     # clear the apt cache
     && rm -rf /var/lib/apt/lists/* \
     # enable apache mod_rewrite for 'pretty' urls and mod_headers so we can add the container id
