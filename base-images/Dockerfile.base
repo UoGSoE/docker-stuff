@@ -34,7 +34,7 @@ RUN apt-get update \
     # install the redis php extension
     && pickle install redis-${PHP_REDIS_VERSION} \
     # clear the apt cache
-    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/lib/apt/lists/* /var/cache/debconf/templates* /var/lib/dpkg/status* /var/log/dpkg.log /var/log/apt/term.log /var/cache/debconf/config.dat \
     # enable apache mod_rewrite for 'pretty' urls and mod_headers so we can add the container id
     && a2enmod rewrite \
     && a2enmod headers \
