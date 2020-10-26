@@ -4,7 +4,6 @@ FROM php:${PHP_VERSION}-apache as prod
 
 ARG PHP_VERSION
 ARG PHP_REDIS_VERSION=5.0.2
-ARG PICKLE_VERSION=0.6.0
 ARG COMPOSER_VERSION=2.0.1
 
 LABEL org.opencontainers.image.source=https://github.com/UoGSoE/docker-stuff/ \
@@ -20,19 +19,16 @@ ENV LANG=en_GB.UTF-8
 # Note: we only install reliable/core 1st-party php extensions here.
 #       If your app needs custom ones install them in the apps own
 #       Dockerfile _and pin the versions_! Eg:
-#       RUN pickle install memcached-2.2.0
+#       RUN pecl install memcached-2.2.0
 
 RUN apt-get update \
     # install some OS packages we need
     && apt-get install -y --no-install-recommends libfreetype6-dev libjpeg62-turbo-dev libpng-dev libgmp-dev libldap2-dev netcat curl sqlite3 libsqlite3-dev libzip-dev unzip vim-tiny gosu git \
-    # install the 'pickle' utility to replace php's deprecated 'pecl'
-    && curl -sLo /usr/local/bin/pickle https://github.com/FriendsOfPHP/pickle/releases/download/v${PICKLE_VERSION}/pickle.phar \
-    && chmod +x /usr/local/bin/pickle \
     # install php extensions
     && case "${PHP_VERSION}" in "7.4"|"rc") docker-php-ext-configure gd --with-freetype --with-jpeg ;; *) docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ ;; esac \
     && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql pdo_sqlite zip gmp bcmath pcntl ldap sysvmsg exif \
     # install the redis php extension
-    && pickle install redis-${PHP_REDIS_VERSION} \
+    && pecl install redis-${PHP_REDIS_VERSION} \
     && echo "extension=redis.so" > /usr/local/etc/php/conf.d/redis.ini \
     # clear the apt cache
     && rm -rf /var/lib/apt/lists/* /var/cache/debconf/templates* /var/lib/dpkg/status/* /var/log/dpkg.log /var/log/apt/term.log /var/cache/debconf/config.dat \
