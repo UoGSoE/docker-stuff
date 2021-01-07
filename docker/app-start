@@ -29,9 +29,7 @@ if [ "$role" = "app" ]; then
 
 elif [ "$role" = "queue" ]; then
 
-    trap "{ php /var/www/html/artisan horizon:terminate; }" SIGTERM
-
-    gosu www-data nice php /var/www/html/artisan horizon
+    exec gosu www-data nice php /var/www/html/artisan horizon
 
 elif [ "$role" = "scheduler" ]; then
 
