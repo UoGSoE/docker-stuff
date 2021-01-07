@@ -5,11 +5,15 @@ set -e
 role=${CONTAINER_ROLE:-app}
 env=${APP_ENV:-production}
 
-until nc -z -v -w30 mysql 3306
-do
-    echo "Waiting for database connection..."
-    sleep 5
-done
+if [ "${env}" != "production" ];
+then
+    # in QA/testing we wait for the local mysql container to come up
+    until nc -z -v -w30 mysql 3306
+    do
+        echo "Waiting for database connection..."
+        sleep 5
+    done
+fi
 
 until echo 'PING' | nc -w 1 redis 6379 | grep -q PONG
 do
@@ -24,6 +28,8 @@ if [ "$role" = "app" ]; then
     exec apache2-foreground
 
 elif [ "$role" = "queue" ]; then
+
+    trap "{ php /var/www/html/artisan horizon:terminate; }" SIGTERM
 
     gosu www-data nice php /var/www/html/artisan horizon
 
