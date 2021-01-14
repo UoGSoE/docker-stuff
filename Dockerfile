@@ -110,9 +110,6 @@ RUN php /var/www/html/artisan storage:link && \
 #- Set up the default healthcheck
 HEALTHCHECK --start-period=30s CMD /usr/local/bin/app-healthcheck
 
-#- And off we go...
-CMD ["/usr/local/bin/app-start"]
-
 
 ### Build the ci version of the app (prod+dev packages)
 FROM prod as ci
