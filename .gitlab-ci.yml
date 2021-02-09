@@ -66,14 +66,14 @@ unit-tests:
   - php artisan migrate:fresh
   - cat .env
   - php vendor/bin/phpunit --colors=never --testdox
-  - egrep -r '[^a-zA-Z](dd\(|dump\()' app && exit 1
+  - egrep -r '[^a-zA-Z](dd\(|dump\()' app || exit 0
   - if [[ -f /usr/local/bin/phpcs ]]; then php /usr/local/bin/phpcs --config-set ignore_warnings_on_exit 1 ; php /usr/local/bin/phpcs --standard=PSR2 app ; fi
 
 php-security-scan:
   stage: test
   image: $QA_IMAGE_NAME
   script:
-    - if [[ -f /usr/local/bin/security-checker ]]; then php /usr/local/bin/security-checker security:check ./composer.lock ; fi
+    - if [[ -f /root/.composer/vendor/bin/security-checker ]]; then php /root/.composer/vendor/bin/security-checker security:check ./composer.lock ; fi
 
 build-qa-tagged:
   stage: build-qa
