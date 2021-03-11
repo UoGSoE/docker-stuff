@@ -33,7 +33,7 @@ RUN npm install && \
 
 
 ### Prod php dependencies
-FROM uogsoe/soe-php-apache:${PHP_VERSION} as prod-composer
+FROM dev as prod-composer
 ENV APP_ENV=production
 ENV APP_DEBUG=0
 
