@@ -15,8 +15,7 @@ x-deploy:
     parallelism: 1
     failure_action: rollback
     order: start-first
-  limits:
-    cpus: "1"
+
 
 services:
   app:
@@ -45,13 +44,14 @@ services:
         order: start-first
       replicas: 1
       labels:
-        # note: this assumes traefik v1
-        - "traefik.backend=${TRAEFIK_BACKEND}"
-        - "traefik.docker.network=proxy"
-        - "traefik.frontend.rule=Host:${TRAEFIK_HOSTNAME}"
+        # note: this assumes traefik v2
         - "traefik.enable=true"
-        - "traefik.port=80"
-        - "traefik.default.protocol=http"
+        - "traefik.http.routers.${TRAEFIK_BACKEND}.rule=Host(`${TRAEFIK_HOSTNAME}`)"
+        - "traefik.http.routers.${TRAEFIK_BACKEND}.entrypoints=web"
+        - "traefik.http.services.${TRAEFIK_BACKEND}.loadbalancer.server.port=80" # it seems you always need to give traefik a port so it 'notices' the service
+        - "traefik.http.routers.${TRAEFIK_BACKEND}-secured.rule=Host(`${TRAEFIK_HOSTNAME}`)"
+        - "traefik.http.routers.${TRAEFIK_BACKEND}-secured.entrypoints=web-secured"
+        - "traefik.http.routers.${TRAEFIK_BACKEND}-secured.tls.certresolver=mytlschallenge"
 
   scheduler:
     image: ${IMAGE_NAME}
@@ -123,39 +123,19 @@ services:
     image: mailhog/mailhog
     deploy:
       labels:
-        - "traefik.backend=${TRAEFIK_BACKEND}-mailhog"
-        - "traefik.docker.network=proxy"
-        - "traefik.frontend.rule=Host:mail-${TRAEFIK_HOSTNAME}"
+        # note: this assumes traefik v2
         - "traefik.enable=true"
-        - "traefik.port=8025"
-        - "traefik.default.protocol=http"
+        - "traefik.http.routers.mailhog-${TRAEFIK_BACKEND}.rule=Host(`mail-${TRAEFIK_HOSTNAME}`)"
+        - "traefik.http.routers.mailhog-${TRAEFIK_BACKEND}.entrypoints=web"
+        - "traefik.http.services.mailhog-${TRAEFIK_BACKEND}.loadbalancer.server.port=8025" # it seems you always need to give traefik a port so it 'notices' the service
+        - "traefik.http.routers.mailhog-${TRAEFIK_BACKEND}-secured.rule=Host(`mail-${TRAEFIK_HOSTNAME}`)"
+        - "traefik.http.routers.mailhog-${TRAEFIK_BACKEND}-secured.entrypoints=web-secured"
+        - "traefik.http.routers.mailhog-${TRAEFIK_BACKEND}-secured.tls.certresolver=mytlschallenge"
     expose:
       - "8025"
     networks:
       - proxy
       - private
-
-  minio:
-    image: minio/minio:RELEASE.2019-10-12T01-39-57Z
-    deploy:
-      replicas: 1
-      update_config:
-        parallelism: 1
-        failure_action: rollback
-        order: start-first
-    entrypoint: sh
-    command: -c 'mkdir -p /data/jwnc && /usr/bin/minio server /data'
-    environment:
-      MINIO_ACCESS_KEY: ${MINIO_PROD_KEY}
-      MINIO_SECRET_KEY: ${MINIO_PROD_SECRET}
-      MINIO_REGION: "us-east-1"
-      MINIO_BUCKET: "jwnc"
-      MINIO_ENDPOINT: "${MINIO_PROD_ENDPOINT}"
-    networks:
-      - default
-      - proxy
-    volumes:
-      - minio:/data
 
 volumes:
   redis:
