@@ -114,7 +114,7 @@ deploy_to_qa:
   - echo "${QA_DOTENV}" | docker -H ssh://deployer@${QA_SERVER} secret create ${DOTENV_NAME} -
   - echo "Deploying stack ${STACK_NAME} image ${IMAGE_NAME} with secret ${DOTENV_NAME}"
   - docker -H ssh://deployer@${QA_SERVER} stack deploy -c qa-stack.yml --prune ${STACK_NAME}
-  - DOCKER_HOST=ssh://deployer@${PROD_SERVER} docker/docker-stack-wait.sh ${STACK_NAME}
+  - DOCKER_HOST=ssh://deployer@${QA_SERVER} docker/docker-stack-wait.sh ${STACK_NAME}
   - if [ ! -z "${SLACK_WEBHOOK}" ]; then curl -X POST -H 'Content-type:application/json' --data "{\"username\":\"gitlab\", \"text\":\"Deployed QA ${STACK_NAME}\", \"channel\":\"#deployments\", \"icon_emoji\":\":ghost:\"}" ${SLACK_WEBHOOK}; fi
 
 deploy_to_prod:
