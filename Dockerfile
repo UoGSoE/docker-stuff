@@ -115,7 +115,7 @@ HEALTHCHECK --start-period=30s CMD /usr/local/bin/app-healthcheck
 FROM prod as ci
 
 ENV APP_ENV=local
-ENV APP_DEBUG=1
+ENV APP_DEBUG=0
 
 #- Copy in our QA php dep's
 COPY --from=qa-composer /var/www/html/vendor /var/www/html/vendor
