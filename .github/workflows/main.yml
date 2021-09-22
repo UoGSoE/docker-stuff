@@ -65,7 +65,7 @@ jobs:
             localhost:5000/${{ github.event.repository.name }}:qa-${{ github.sha }}
       -
         name: Run tests
-        uses: addnab/docker-run-action@v1
+        uses: addnab/docker-run-action@v3
         with:
           # username: ${{ secrets.DOCKERHUB_USERNAME }}
           # password: ${{ secrets.DOCKERHUB_TOKEN }}
