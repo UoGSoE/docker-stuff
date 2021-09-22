@@ -11,4 +11,4 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-cp -av docker .dockerignore .env.gitlab .github .env.github .gitlab-ci.yml Dockerfile prod-stack.yml qa-stack.yml docker-compose.yml LICENSE "$1"
+cp -av docker .dockerignore .env.gitlab .github .env.github .gitlab-ci.yml Dockerfile prod-stack.yml qa-stack.yml docker-compose.yml LICENSE .github .env.github phpunit.github.xml "$1"

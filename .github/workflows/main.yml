@@ -1,0 +1,135 @@
+name: build-images
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "**"
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: homestead
+          MYSQL_DATABASE: homestead
+        ports:
+          - 33306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          driver-opts: network=host
+      -
+        name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      -
+        name: Build and push local test image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64 #,linux/arm/v7,linux/arm64
+          push: true
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          target: ci
+          build-args: |
+            PHP_VERSION=8.0
+          tags: |
+            localhost:5000/${{ github.event.repository.name }}:qa-${{ github.sha }}
+      -
+        name: Run tests
+        uses: addnab/docker-run-action@v1
+        with:
+          # username: ${{ secrets.DOCKERHUB_USERNAME }}
+          # password: ${{ secrets.DOCKERHUB_TOKEN }}
+          options: "--network host"
+          image: localhost:5000/${{ github.event.repository.name }}:qa-${{ github.sha }}
+          run: rm -fv .env && cp -v .env.github .env && php artisan config:clear && CI=1 APP_ENV=testing ./vendor/bin/phpunit -c phpunit.github.xml
+      -
+        name: Get tag
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF##*/}
+      -
+        name: Login to DockerHub
+        if: startsWith(steps.get_version.outputs.VERSION, 'v') || startsWith(steps.get_version.outputs.VERSION, 'qa') || github.ref == 'refs/heads/master'
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Retag and publish local QA image
+        if: startsWith(steps.get_version.outputs.VERSION, 'qa')
+        uses: akhilerm/tag-push-action@v1.1.0
+        with:
+          src: localhost:5000/${{ github.event.repository.name }}:qa-${{ github.sha }}
+          dst: |
+            docker.io/uogsoe/${{ github.event.repository.name }}:qa-${{ github.sha }}
+      -
+        name: Build and push prod
+        if: github.ref == 'refs/heads/master'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64 #,linux/arm/v7,linux/arm64
+          push: true
+          target: prod
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          build-args: |
+            PHP_VERSION=8.0
+          tags: |
+            uogsoe/${{ github.event.repository.name }}:prod-${{ github.sha }}
+      -
+        name: Build and push versioned tag
+        if: startsWith(steps.get_version.outputs.VERSION, 'v')
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64 #,linux/arm/v7,linux/arm64
+          push: true
+          target: prod
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          build-args: |
+            PHP_VERSION=8.0
+          tags: |
+            docker.io/uogsoe/${{ github.event.repository.name }}:${{ steps.get_version.outputs.VERSION }}
+      -
+        name: Create automatic release on new versioned tag
+        if: startsWith(steps.get_version.outputs.VERSION, 'v')
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          draft: false
+          prerelease: false
+          automatic_release_tag: ${{ steps.get_version.outputs.VERSION }}
+          title: ${{ steps.get_version.outputs.VERSION }}
