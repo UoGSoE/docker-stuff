@@ -90,7 +90,7 @@ jobs:
         with:
           src: localhost:5000/${{ github.event.repository.name }}:qa-${{ github.sha }}
           dst: |
-            docker.io/uogsoe/${{ github.event.repository.name }}:qa-${{ github.sha }}
+            docker.io/uogsoe/${{ github.event.repository.name }}:${{ steps.get_version.outputs.VERSION }}
       -
         name: Build and push prod
         if: github.ref == 'refs/heads/master'

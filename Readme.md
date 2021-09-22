@@ -114,6 +114,14 @@ The gitlab CI setup will build two images :
 * `your/repo:qa-${git_sha}` - all the code & prod+dev php packages
 * `your/repo:prod-${git_sha}` - all the code & only production php packages (only built when pushing to the master branch)
 
+## GitHub Actions
+There's also a `.github` directory and a matching `.env.github` and `phpunit.gihub.xml` file for running tests and builds of docker images.  By default, the action run will do :
+
+* any push to the repo will build a local image and run phpunit.
+* If you push/merge to `master` it will also build & push an image with `your/repo:prod-${git_sha}`
+* If you push a git tag starting with `qa` (eg, `git tag -a qa-test-new-feature`) it will build and push an image named `your/repo:qa-test-new-feature`
+* If you push a git tag starting with a `v` and a semver-looking value after it (eg, `git tag -a v1.2.3`) it will build and push an image named `your/repo:v1.2.3` and also publish a github 'release' of `v1.2.3`.
+
 ## Our current setup
 
 We have a small(ish) docker swarm.  Each node runs a local container registry on 127.0.0.1:5000.  We have an on-premise Gitlab install which acts as our source controller, CI runner and container registry.
