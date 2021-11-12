@@ -65,7 +65,7 @@ unit-tests:
   - php artisan config:clear
   - php artisan migrate:fresh
   - cat .env
-  - php vendor/bin/phpunit --colors=never --testdox
+  - php vendor/bin/phpunit -c phpunit.gitlab.xml --colors=never --testdox
   - egrep -r '[^a-zA-Z](dd\(|dump\()' app || exit 0
   - if [[ -f /usr/local/bin/phpcs ]]; then php /usr/local/bin/phpcs --config-set ignore_warnings_on_exit 1 ; php /usr/local/bin/phpcs --standard=PSR2 app ; fi
 
