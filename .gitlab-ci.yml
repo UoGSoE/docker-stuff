@@ -75,6 +75,14 @@ php-security-scan:
   script:
     - if [[ -f /root/.composer/vendor/bin/security-checker ]]; then php /root/.composer/vendor/bin/security-checker security:check ./composer.lock ; fi
 
+dotenv-check:
+  stage: test
+  script:
+    - echo "$PROD_DOTENV" > .env
+    - diff --new-line-format='' --unchanged-line-format='' <(sort .env | egrep -v '^#' | sed -e 's/=.*//') <(sort .env.example | egrep -v '^#' | sed -e 's/=.*//')
+    - echo "$QA_DOTENV" > .env
+    - diff --new-line-format='' --unchanged-line-format='' <(sort .env | egrep -v '^#' | sed -e 's/=.*//') <(sort .env.example | egrep -v '^#' | sed -e 's/=.*//')
+
 build-qa-tagged:
   stage: build-qa
   image: docker:stable
