@@ -1,0 +1,79 @@
+name: 
+recipe: laravel
+config:
+  webroot: public
+  php: '8.1'
+  cache: redis
+services:
+  mail:
+    type: mailhog
+    portforward: true
+    hogfrom:
+      - appserver
+  meilisearch:
+    type: compose
+    app_mount: false
+    services:
+      image: getmeili/meilisearch:v0.27.0
+      command: tini -- /bin/meilisearch
+      volumes:
+        - ./storage/meilisearch:/meili_data
+  minio:
+    type: compose
+    app_mount: false
+    services:
+      image: quay.io/minio/minio:RELEASE.2022-03-08T22-28-51Z
+      command: minio server /data --console-address ":9001"
+      volumes:
+        - ./storage/minio_dev:/data
+      environment:
+        MINIO_ROOT_USER: minioadmin
+        MINIO_ROOT_PASSWORD: minioadmin
+        # MINIO_REGION: "us-east-1"
+        # MINIO_BUCKET: "exampapers"
+        # MINIO_ENDPOINT: "${MINIO_QA_ENDPOINT}"
+  node:
+    type: node
+    build:
+      - npm install
+
+excludes:
+  - node_modules
+tooling:
+  mfs:
+    service: appserver
+    description: "Drop db, migrate and seed"
+    cmd: php artisan migrate:fresh && php artisan db:seed --class=TestDataSeeder
+  horizon:
+    service: appserver
+    description: "Run horizon"
+    cmd: php artisan horizon
+  test:
+    service: appserver
+    description: "Run phpunit"
+    cmd: CI=1 php artisan test --parallel
+  testf:
+    service: appserver
+    description: "Run phpunit with --filter"
+    cmd: php artisan test --filter
+  fixldap:
+    service: appserver
+    description: "Set up insecure ldap"
+    user: root
+    cmd: apt-get update && apt-get install -y libldap-common && printf "\nTLS_REQCERT never\n" >> /etc/ldap/ldap.conf
+  npm:
+    service: node
+    description: "Run npm command"
+    cmd: npm
+  npmd:
+    service: node
+    description: "Run npm run dev"
+    cmd: npm run development
+  npmp:
+    service: node
+    description: "Run npm run prod"
+    cmd: npm run production
+  npmw:
+    service: node
+    description: "Run npm run watch"
+    cmd: npm run watch
