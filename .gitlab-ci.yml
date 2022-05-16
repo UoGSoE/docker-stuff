@@ -85,9 +85,15 @@ dotenv-example-missing-keys-check:
     - echo "Checking prod dotenv for keys missing in .env.example"
     - echo "$PROD_DOTENV" > .env
     - diff --new-line-format='' --unchanged-line-format='' <(sort .env | egrep -v '^#' | sed -e 's/=.*//') <(sort .env.example | egrep -v '^#' | sed -e 's/=.*//')
+    - echo "Checking .env.example for keys missing in prod dotenv"
+    - echo "$PROD_DOTENV" > .env
+    - diff --new-line-format='' --unchanged-line-format='' <(sort .env.example | egrep -v '^#' | sed -e 's/=.*//') <(sort .env | egrep -v '^#' | sed -e 's/=.*//')
     - echo "Checking qa dotenv for keys missing in .env.example"
     - echo "$QA_DOTENV" > .env
     - diff --new-line-format='' --unchanged-line-format='' <(sort .env | egrep -v '^#' | sed -e 's/=.*//') <(sort .env.example | egrep -v '^#' | sed -e 's/=.*//')
+    - echo "Checking .env.example for keys missing in qa dotenv"
+    - echo "$QA_DOTENV" > .env
+    - diff --new-line-format='' --unchanged-line-format='' <(sort .env.example | egrep -v '^#' | sed -e 's/=.*//') <(sort .env | egrep -v '^#' | sed -e 's/=.*//')
 
 build-qa-tagged:
   stage: build-qa
