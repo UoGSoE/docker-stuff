@@ -49,14 +49,7 @@ unit-tests:
     MYSQL_USER: homestead
     MYSQL_PASSWORD: secret
 
-  # If you need Node.js
-  #- curl -sL https://deb.nodesource.com/setup_10.x | bash -
-  #- apt-get install -y nodejs
-  #- npm install
-  #- npm run dev
-
   script:
-  # - php vendor/bin/phpunit --coverage-text --colors=never
   - cd /var/www/html
   - mkdir -p /run/secrets
   - cp -f .env.gitlab /run/secrets/.env
@@ -64,10 +57,21 @@ unit-tests:
   - php artisan key:generate
   - php artisan config:clear
   - php artisan migrate:fresh
+  - php artisan list | grep -q 'schema:dump' && php artisan schema:dump
   - cat .env
   - php vendor/bin/phpunit -c phpunit.gitlab.xml --colors=never --testdox
-  - egrep -r '[^a-zA-Z](dd\(|dump\()' app || exit 0
-  - if [[ -f /usr/local/bin/phpcs ]]; then php /usr/local/bin/phpcs --config-set ignore_warnings_on_exit 1 ; php /usr/local/bin/phpcs --standard=PSR2 app ; fi
+
+php-codestyle-check:
+  stage: test
+  image: $QA_IMAGE_NAME
+  script:
+    - if [[ -f /usr/local/bin/phpcs ]]; then php /usr/local/bin/phpcs --config-set ignore_warnings_on_exit 1 ; php /usr/local/bin/phpcs --standard=PSR12 app ; fi
+
+stray-die-and-dump-check:
+  stage: test
+  image: $QA_IMAGE_NAME
+  script:
+    - egrep -r '[^a-zA-Z](dd\(|dump\()' app || exit 0
 
 php-security-scan:
   stage: test
@@ -75,11 +79,13 @@ php-security-scan:
   script:
     - if [[ -f /root/.composer/vendor/bin/security-checker ]]; then php /root/.composer/vendor/bin/security-checker security:check ./composer.lock ; fi
 
-dotenv-check:
+dotenv-example-missing-keys-check:
   stage: test
   script:
+    - echo "Checking prod dotenv for keys missing in .env.example"
     - echo "$PROD_DOTENV" > .env
     - diff --new-line-format='' --unchanged-line-format='' <(sort .env | egrep -v '^#' | sed -e 's/=.*//') <(sort .env.example | egrep -v '^#' | sed -e 's/=.*//')
+    - echo "Checking qa dotenv for keys missing in .env.example"
     - echo "$QA_DOTENV" > .env
     - diff --new-line-format='' --unchanged-line-format='' <(sort .env | egrep -v '^#' | sed -e 's/=.*//') <(sort .env.example | egrep -v '^#' | sed -e 's/=.*//')
 
@@ -149,5 +155,4 @@ deploy_to_prod:
   - echo "Deploying stack ${STACK_NAME} image ${IMAGE_NAME} with secret ${DOTENV_NAME}"
   - docker -H ssh://eng-it@${PROD_SERVER} stack deploy -c prod-stack.yml --prune ${STACK_NAME}
   - DOCKER_HOST=ssh://eng-it@${PROD_SERVER} docker/docker-stack-wait.sh ${STACK_NAME}
-
   - if [ ! -z "${SLACK_WEBHOOK}" ]; then curl -X POST -H 'Content-type:application/json' --data "{\"username\":\"gitlab\", \"text\":\"Deployed Production ${STACK_NAME}\", \"channel\":\"#deployments\", \"icon_emoji\":\":ghost:\"}" ${SLACK_WEBHOOK}; fi
