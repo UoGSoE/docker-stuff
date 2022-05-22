@@ -11,5 +11,10 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 
-cp -av docker .dockerignore .env.gitlab .github .env.github .gitlab-ci.yml Dockerfile prod-stack.yml qa-stack.yml docker-compose.yml LICENSE .github .env.github phpunit.github.xml "$1"
+cp -av docker .dockerignore .env.example .lando.yml .env.gitlab .github .env.github .gitlab-ci.yml Dockerfile prod-stack.yml qa-stack.yml docker-compose.yml LICENSE .github .env.github phpunit.github.xml phpunit.gitlab.xml "$1"
 cp -av _gitignore "$1/.gitignore"
+mkdir -p "$1/storage/minio_dev/bucket"
+mkdir -p "$1/storage/meilisearch"
+touch "$1/storage/minio_dev/bucket/.gitkeep"
+touch "$1/storage/meilisearch/.gitkeep"
+

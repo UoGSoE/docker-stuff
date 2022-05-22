@@ -1,17 +1,19 @@
 #
 # Variables which should be set in the gitlab project or group :
 #
-# PHP_VERSION (eg '7.2')
+# PHP_VERSION (eg '8.1')
 # STACK_NAME (eg, 'amazingapp' - as in 'docker stack deploy $STACK_NAME')
 # TRAEFIK_BACKEND (eg 'amazingapp-web' - label for traefik dashboard)
 # TRAEFIK_QA_HOSTNAME (eg, amazing.qa-domain.ac.uk - hostname your app will be available on)
 # TRAEFIK_PROD_HOSTNAME (eg, amazing.prod-domain.ac.uk - hostname your app will be available on)
-# QA_DOTENV (*qa/test* .env file contents)
+# QA_DOTENV (*QA* .env file contents)
 # QA_SERVER (eg, qaserver.domain.ac.uk)
-# QA_SSH_KEY (private key for the deployer user on QA)
+# QA_SSH_KEY (private key for the deployment ssh user on QA)
+# QA_SSH_USER (username for deployment ssh user on QA)
 # PROD_DOTENV (*production* .env file contents)
 # PROD_SERVER (see above)
 # PROD_SSH_KEY (see above)
+# PROD_SSH_USER (see above)
 #
 # There should also be two environments in your gitlab project - 'prod' and 'qa'
 #
@@ -28,8 +30,6 @@ variables:
   LOCAL_QA_IMAGE_NAME: localhost:5000/$CI_PROJECT_PATH:qa-$CI_COMMIT_SHA
   LOCAL_PROD_IMAGE_NAME: localhost:5000/$CI_PROJECT_PATH:prod-$CI_COMMIT_SHA
 
-# This folder is cached between builds
-# http://docs.gitlab.com/ce/ci/yaml/README.html#cache
 cache:
   paths:
   # - vendor/
@@ -37,18 +37,14 @@ cache:
 
 unit-tests:
   stage: test
-
   image: $QA_IMAGE_NAME
-
   services:
   - mysql:5.7
-
   variables:
     MYSQL_DATABASE: homestead
     MYSQL_ROOT_PASSWORD: secret
     MYSQL_USER: homestead
     MYSQL_PASSWORD: secret
-
   script:
   - cd /var/www/html
   - mkdir -p /run/secrets
@@ -57,9 +53,9 @@ unit-tests:
   - php artisan key:generate
   - php artisan config:clear
   - php artisan migrate:fresh
-  - php artisan list | grep -q 'schema:dump' && php artisan schema:dump
   - cat .env
-  - php vendor/bin/phpunit -c phpunit.gitlab.xml --colors=never --testdox
+  - echo "Add code coverage and upload artifact to gitlab"
+  - if `php artisan list | grep -q 'Run the application tests'`; then php artisan test --parallel -c phpunit.gitlab.xml ; else php vendor/bin/phpunit -c phpunit.gitlab.xml --colors=never --testdox ; fi
 
 php-codestyle-check:
   stage: test
@@ -81,84 +77,122 @@ php-security-scan:
 
 dotenv-example-missing-keys-check:
   stage: test
+  image: $QA_IMAGE_NAME
+  artifacts:
+    paths:
+      - envdiff.txt
+    expire_in: 1 week
   script:
-    - echo "Checking prod dotenv for keys missing in .env.example"
+    - set +eo pipefail
+    - echo 'diff --new-line-format='\'''\'' --unchanged-line-format='\'''\'' <(sort $1 | egrep -v '\''^#'\'' | sed -e '\''s/=.*//'\'') <(sort $2 | egrep -v '\''^#'\'' | sed -e '\''s/=.*//'\'')' > envdiff.sh
+    - chmod +x envdiff.sh
+    - echo "Checking prod dotenv for keys missing in .env.example" | tee -a envdiff.txt
     - echo "$PROD_DOTENV" > .env
-    - diff --new-line-format='' --unchanged-line-format='' <(sort .env | egrep -v '^#' | sed -e 's/=.*//') <(sort .env.example | egrep -v '^#' | sed -e 's/=.*//')
-    - echo "Checking .env.example for keys missing in prod dotenv"
+    - ./envdiff.sh .env .env.example | tee -a envdiff.txt
+    - echo "Checking .env.example for keys missing in prod dotenv" | tee -a envdiff.txt
     - echo "$PROD_DOTENV" > .env
-    - diff --new-line-format='' --unchanged-line-format='' <(sort .env.example | egrep -v '^#' | sed -e 's/=.*//') <(sort .env | egrep -v '^#' | sed -e 's/=.*//')
-    - echo "Checking qa dotenv for keys missing in .env.example"
+    - ./envdiff.sh .env.example .env | tee -a envdiff.txt
+    - echo "Checking qa dotenv for keys missing in .env.example" | tee -a envdiff.txt
     - echo "$QA_DOTENV" > .env
-    - diff --new-line-format='' --unchanged-line-format='' <(sort .env | egrep -v '^#' | sed -e 's/=.*//') <(sort .env.example | egrep -v '^#' | sed -e 's/=.*//')
-    - echo "Checking .env.example for keys missing in qa dotenv"
+    - ./envdiff.sh .env .env.example | tee -a envdiff.txt
+    - echo "Checking .env.example for keys missing in qa dotenv" | tee -a envdiff.txt
     - echo "$QA_DOTENV" > .env
-    - diff --new-line-format='' --unchanged-line-format='' <(sort .env.example | egrep -v '^#' | sed -e 's/=.*//') <(sort .env | egrep -v '^#' | sed -e 's/=.*//')
+    - ./envdiff.sh .env.example .env | tee -a envdiff.txt
 
-build-qa-tagged:
+build-qa:
   stage: build-qa
-  image: docker:stable
-  script:
-  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} --target=ci -t $QA_IMAGE_NAME .
-  - docker push $QA_IMAGE_NAME
+  extends:
+    - .build
+  environment: qa
+  variables:
+    DOCKER_TARGET: ci
+    IMAGE_NAME: $QA_IMAGE_NAME
 
-build-prod-tagged:
+build-prod:
   stage: build-prod
-  image: docker:stable
+  extends:
+    - .build
+  environment: prod
   only:
   - master
-  script:
-  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} --target=prod -t $PROD_IMAGE_NAME .
-  - docker push $PROD_IMAGE_NAME
+  variables:
+    DOCKER_TARGET: prod
+    IMAGE_NAME: $PROD_IMAGE_NAME
 
 deploy_to_qa:
   stage: deploy
+  extends:
+    - .deployment
   when: manual
-  environment: qa
-  image: docker:stable
-  script:
-  - apk add -qU openssh curl
-  - eval $(ssh-agent -s)
-  - export IMAGE_NAME=$LOCAL_QA_IMAGE_NAME
-  - export TRAEFIK_BACKEND=$TRAEFIK_BACKEND
-  - export TRAEFIK_HOSTNAME=$TRAEFIK_QA_HOSTNAME
-  - export NOW=`date +%Y-%m-%d-%H-%M-%S`
-  - export DOTENV_NAME="${CI_PROJECT_PATH_SLUG}-qa-dotenv-${NOW}"
-  - echo "$QA_SSH_KEY" | tr -d '\r' | ssh-add - > /dev/null
-  - mkdir ~/.ssh
-  - chmod 700 ~/.ssh
-  - ssh-keyscan ${QA_SERVER} > ~/.ssh/known_hosts
-  - chmod 644 ~/.ssh/known_hosts
-  - echo "${QA_DOTENV}" | docker -H ssh://deployer@${QA_SERVER} secret create ${DOTENV_NAME} -
-  - echo "Deploying stack ${STACK_NAME} image ${IMAGE_NAME} with secret ${DOTENV_NAME}"
-  - docker -H ssh://deployer@${QA_SERVER} stack deploy -c qa-stack.yml --prune ${STACK_NAME}
-  - DOCKER_HOST=ssh://deployer@${QA_SERVER} docker/docker-stack-wait.sh ${STACK_NAME}
-  - if [ ! -z "${SLACK_WEBHOOK}" ]; then curl -X POST -H 'Content-type:application/json' --data "{\"username\":\"gitlab\", \"text\":\"Deployed QA ${STACK_NAME}\", \"channel\":\"#deployments\", \"icon_emoji\":\":ghost:\"}" ${SLACK_WEBHOOK}; fi
+  environment: 
+    name: qa
+    url: http://${TRAEFIK_QA_HOSTNAME}
+  needs:
+  - build-qa
+  variables:
+    IMAGE_NAME: ${LOCAL_QA_IMAGE_NAME}
+    TRAEFIK_BACKEND: ${TRAEFIK_QA_BACKEND}
+    TRAEFIK_HOSTNAME: ${TRAEFIK_QA_HOSTNAME}
+    SSH_KEY: ${QA_SSH_KEY}
+    SSH_USER: ${QA_SSH_USER}
+    SERVER: ${QA_SERVER}
+    DOTENV: ${QA_DOTENV}
 
 deploy_to_prod:
   stage: deploy
+  extends:
+    - .deployment
   when: manual
   only:
   - master
-  environment: prod
+  needs:
+  - build-prod
+  environment: 
+    name: prod
+    url: https://${TRAEFIK_PROD_HOSTNAME}
+  variables:
+    IMAGE_NAME: ${LOCAL_PROD_IMAGE_NAME}
+    TRAEFIK_BACKEND: ${TRAEFIK_PROD_BACKEND}
+    TRAEFIK_HOSTNAME: ${TRAEFIK_PROD_HOSTNAME}
+    SSH_KEY: ${PROD_SSH_KEY}
+    SSH_USER: ${PROD_SSH_USER}
+    SERVER: ${PROD_SERVER}
+    DOTENV: ${PROD_DOTENV}
+
+.build:
   image: docker:stable
+  variables:
+    DOCKER_TARGET: ""
+    IMAGE_NAME: ""
+  script:
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} --target="${DOCKER_TARGET}" -t $IMAGE_NAME .
+  - docker push $IMAGE_NAME
+
+.deployment:
+  when: manual
+  image: docker:stable
+  variables:
+    IMAGE_NAME: ""
+    TRAEFIK_BACKEND: ""
+    TRAEFIK_HOSTNAME: ""
+    SSH_KEY: ""
+    SSH_USER: ""
+    SERVER: ""
+    DOTENV: ""
   script:
   - apk add -qU openssh curl
   - eval $(ssh-agent -s)
-  - export IMAGE_NAME=$LOCAL_PROD_IMAGE_NAME
-  - export TRAEFIK_BACKEND=$TRAEFIK_BACKEND
-  - export TRAEFIK_HOSTNAME=$TRAEFIK_PROD_HOSTNAME
-  - export NOW=`date +%Y-%m-%d-%H-%M-%S`
-  - export DOTENV_NAME="${CI_PROJECT_PATH_SLUG}-prod-dotenv-${NOW}"
-  - echo "$PROD_SSH_KEY" | tr -d '\r' | ssh-add - > /dev/null
+  - echo "$SSH_KEY" | tr -d '\r' | ssh-add - > /dev/null
   - mkdir ~/.ssh
   - chmod 700 ~/.ssh
-  - ssh-keyscan ${PROD_SERVER} > ~/.ssh/known_hosts
+  - ssh-keyscan ${SERVER} > ~/.ssh/known_hosts
   - chmod 644 ~/.ssh/known_hosts
-  - echo "${PROD_DOTENV}" | docker -H ssh://eng-it@${PROD_SERVER} secret create ${DOTENV_NAME} -
+  - export NOW=`date +%Y-%m-%d-%H-%M-%S`
+  - export DOTENV_NAME="${CI_PROJECT_PATH_SLUG}-${CI_ENVIRONMENT_NAME}-dotenv-${NOW}"
+  - export DOCKER_HOST=ssh://${SSH_USER}@${SERVER}
+  - echo "${DOTENV}" | docker secret create ${DOTENV_NAME} -
   - echo "Deploying stack ${STACK_NAME} image ${IMAGE_NAME} with secret ${DOTENV_NAME}"
-  - docker -H ssh://eng-it@${PROD_SERVER} stack deploy -c prod-stack.yml --prune ${STACK_NAME}
-  - DOCKER_HOST=ssh://eng-it@${PROD_SERVER} docker/docker-stack-wait.sh ${STACK_NAME}
-  - if [ ! -z "${SLACK_WEBHOOK}" ]; then curl -X POST -H 'Content-type:application/json' --data "{\"username\":\"gitlab\", \"text\":\"Deployed Production ${STACK_NAME}\", \"channel\":\"#deployments\", \"icon_emoji\":\":ghost:\"}" ${SLACK_WEBHOOK}; fi
+  - docker stack deploy -c ${CI_ENVIRONMENT_NAME}-stack.yml --prune ${STACK_NAME}
+  - ./docker/docker-stack-wait.sh ${STACK_NAME}
+  - if [ ! -z "${SLACK_WEBHOOK}" ]; then curl -X POST -H 'Content-type:application/json' --data "{\"username\":\"gitlab\", \"text\":\"${GITLAB_USER_NAME} Deployed ${CI_ENVIRONMENT_NAME} ${STACK_NAME}\", \"channel\":\"#deployments\", \"icon_emoji\":\":ghost:\"}" ${SLACK_WEBHOOK}; fi

@@ -2,8 +2,8 @@
 /public/hot
 /public/storage
 /storage/*.key
-/storage/minio_dev/exampapers/*
-!/storage/minio_dev/exampapers/.gitkeep
+/storage/minio_dev/bucket/*
+!/storage/minio_dev/bucket/.gitkeep
 /storage/minio_dev/.minio.sys
 /storage/meilisearch/*
 !/storage/meilisearch/.gitkeep*

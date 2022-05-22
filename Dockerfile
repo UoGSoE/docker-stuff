@@ -1,5 +1,5 @@
 ### PHP version we are targetting
-ARG PHP_VERSION=7.4
+ARG PHP_VERSION=8.0
 
 
 ### Placeholder for basic dev stage for use with docker-compose
@@ -125,4 +125,3 @@ RUN composer global require enlightn/security-checker && \
     curl -OL -o /usr/local/bin/phpcs https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar && \
     php /var/www/html/artisan view:clear && \
     php /var/www/html/artisan cache:clear
-

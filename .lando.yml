@@ -61,6 +61,17 @@ tooling:
     description: "Set up insecure ldap"
     user: root
     cmd: apt-get update && apt-get install -y libldap-common && printf "\nTLS_REQCERT never\n" >> /etc/ldap/ldap.conf
+  ci:
+    service: appserver
+    description: "Run pseudo CI run"
+    cmd: 
+      - set -e
+      - composer global require enlightn/security-checker 
+      - curl -OL -o /usr/local/bin/phpcs https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar
+      - php /usr/local/bin/phpcs --config-set ignore_warnings_on_exit 1
+      - php /usr/local/bin/phpcs --standard=PSR12 app
+      - egrep -r '[^a-zA-Z](dd\(|dump\(|ray\()' app
+      - php /root/.composer/vendor/bin/security-checker security:check ./composer.lock
   npm:
     service: node
     description: "Run npm command"
