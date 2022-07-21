@@ -11,7 +11,7 @@ CMD ["tini", "--", "/usr/local/bin/app-start"]
 
 
 ### Build JS/css assets
-FROM node:14 as frontend
+FROM node:16.14.2 as frontend
 
 # workaround for mix.version() webpack bug
 RUN ln -s /home/node/public /public
