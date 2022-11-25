@@ -86,7 +86,7 @@ jobs:
       -
         name: Retag and publish local QA image
         if: startsWith(steps.get_version.outputs.VERSION, 'qa')
-        uses: akhilerm/tag-push-action@v1.1.0
+        uses: akhilerm/tag-push-action@v2.1.0
         with:
           src: localhost:5000/${{ github.event.repository.name }}:qa-${{ github.sha }}
           dst: |
