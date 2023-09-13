@@ -134,9 +134,8 @@ services:
     expose:
       - "8025"
     networks:
-      proxy:
-        private:
-          aliases: ["mailhog.service"]
+      - proxy
+      - private
 
 volumes:
   redis:

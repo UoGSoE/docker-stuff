@@ -10,6 +10,11 @@ services:
     portforward: true
     hogfrom:
       - appserver
+  appserver:
+    scanner:
+      okCodes:
+        401
+        200
   meilisearch:
     type: compose
     app_mount: false
