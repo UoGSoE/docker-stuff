@@ -73,7 +73,7 @@ php-security-scan:
   stage: test
   image: $QA_IMAGE_NAME
   script:
-    - if [[ -f /root/.composer/vendor/bin/security-checker ]]; then php /root/.composer/vendor/bin/security-checker security:check ./composer.lock ; fi
+    - composer audit
 
 dotenv-example-missing-keys-check:
   stage: test

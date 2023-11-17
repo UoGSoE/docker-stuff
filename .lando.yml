@@ -66,6 +66,11 @@ tooling:
     description: "Set up insecure ldap"
     user: root
     cmd: apt-get update && apt-get install -y libldap-common && printf "\nTLS_REQCERT never\n" >> /etc/ldap/ldap.conf
+  fixmysql:
+    service: database
+    description: "Fix AIO stopping mysql starting up"
+    user: root
+    cmd: echo "\n\n" >> /opt/bitnami/mysql/conf/bitnami/my_custom.cnf 
   ci:
     service: appserver
     description: "Run pseudo CI run"
