@@ -55,7 +55,7 @@ unit-tests:
   - php artisan migrate:fresh
   - cat .env
   - echo "Add code coverage and upload artifact to gitlab"
-  - if `php artisan list | grep -q 'Run the application tests'`; then php artisan test --parallel -c phpunit.gitlab.xml ; else php vendor/bin/phpunit -c phpunit.gitlab.xml --colors=never --testdox ; fi
+  - php ./vendor/bin/pest -c phpunit.gitlab.xml
 
 php-codestyle-check:
   stage: test
@@ -107,6 +107,8 @@ build-qa:
   variables:
     DOCKER_TARGET: ci
     IMAGE_NAME: $QA_IMAGE_NAME
+    FLUX_USERNAME: ${FLUX_USERNAME}
+    FLUX_LICENSE_KEY: ${FLUX_LICENSE_KEY}
 
 build-prod:
   stage: build-prod
@@ -166,7 +168,7 @@ deploy_to_prod:
     IMAGE_NAME: ""
   script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} --target="${DOCKER_TARGET}" -t $IMAGE_NAME .
+  - DOCKER_BUILDKIT=1 docker build --build-arg PHP_VERSION=${PHP_VERSION} --build-arg FLUX_USERNAME=${FLUX_USERNAME} --build-arg FLUX_LICENSE_KEY=${FLUX_LICENSE_KEY}  --target="${DOCKER_TARGET}" -t $IMAGE_NAME .
   - docker push $IMAGE_NAME
 
 .deployment:
@@ -195,4 +197,9 @@ deploy_to_prod:
   - echo "Deploying stack ${STACK_NAME} image ${IMAGE_NAME} with secret ${DOTENV_NAME}"
   - docker stack deploy -c ${CI_ENVIRONMENT_NAME}-stack.yml --prune ${STACK_NAME}
   - ./docker/docker-stack-wait.sh ${STACK_NAME}
-  - if [ ! -z "${SLACK_WEBHOOK}" ]; then curl -X POST -H 'Content-type:application/json' --data "{\"username\":\"gitlab\", \"text\":\"${GITLAB_USER_NAME} Deployed ${CI_ENVIRONMENT_NAME} ${STACK_NAME}\", \"channel\":\"#deployments\", \"icon_emoji\":\":ghost:\"}" ${SLACK_WEBHOOK}; fi
+  - >
+    if [ ! -z "${DISCORD_WEBHOOK}" ]; then
+      CLEAN_COMMIT_MESSAGE=$(echo "${CI_COMMIT_MESSAGE}" | tr '\n' ' ' | sed 's/"/\\"/g')
+      curl -X POST -H "Content-Type: application/json" -d '{"embeds": [{"title": "'"${STACK_NAME}"' deployed", "description": "'"${CLEAN_COMMIT_MESSAGE}"'", "color": 3447003, "fields": [{"name": "Environment", "value": "'"${CI_ENVIRONMENT_NAME}"'", "inline": true}, {"name": "Deployed By", "value": "'"${GITLAB_USER_NAME:-unknown}"'", "inline": true}], "timestamp": "'"$(date -u +'%Y-%m-%dT%H:%M:%SZ')"'"}]}' "${DISCORD_WEBHOOK}";
+    fi
+
