@@ -134,6 +134,4 @@ COPY --from=qa-composer /var/www/html/vendor /var/www/html/vendor
 
 #- Clear the caches
 ENV CACHE_STORE=array
-#RUN touch /var/www/html/database/database.sqlite
-#RUN php artisan migrate
 RUN php /var/www/html/artisan optimize:clear
