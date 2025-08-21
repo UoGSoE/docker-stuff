@@ -79,7 +79,10 @@ laravel-env-key-check:
   stage: test
   image: $QA_IMAGE_NAME
   script:
-    - php docker/env-key-check.php
+    - echo "Checking prod dotenv for keys missing compared to laravel repo"
+    - php docker/env_key_check.php --env-var=PROD_DOTENV
+    - echo "Checking qa dotenv for keys missing compared to laravel repo"
+    - php docker/env_key_check.php --env-var=QA_DOTENV
 
 dotenv-example-missing-keys-check:
   stage: test
