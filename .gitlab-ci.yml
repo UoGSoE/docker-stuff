@@ -61,7 +61,7 @@ php-codestyle-check:
   stage: test
   image: $QA_IMAGE_NAME
   script:
-    - if [[ -f /usr/local/bin/phpcs ]]; then php /usr/local/bin/phpcs --config-set ignore_warnings_on_exit 1 ; php /usr/local/bin/phpcs --standard=PSR12 app ; fi
+    - php ./vendor/bin/pint --test
 
 stray-die-and-dump-check:
   stage: test
