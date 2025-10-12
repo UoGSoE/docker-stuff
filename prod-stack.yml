@@ -124,7 +124,7 @@ services:
     # you can get the sha of an image by doing :
     #  docker pull redis:5.0.5
     #  docker images --digests | grep redis
-    image: redis@sha256:ca2d9251c2818df48c6598e01a5bdeab46040dc7ab236abe075d7c7343465177
+    image: redis@sha256:f0957bcaa75fd58a9a1847c1f07caf370579196259d69ac07f2e27b5b389b021
     deploy: *default-deploy
     logging: *default-logging
     networks:

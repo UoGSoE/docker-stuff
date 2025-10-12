@@ -97,7 +97,7 @@ services:
         target: .env
 
   redis:
-    image: redis:5.0.5
+    image: redis:8.2.2
     deploy: *default-deploy
     networks:
       - private
